@@ -1,0 +1,843 @@
+SOLARIUM-CPAPP/
+├── .detoxrc.js
+├── .env.example
+├── .eslintrc.js
+├── .file_contents.txt
+├── .gitignore
+├── .markdownlint.json
+├── .node-version
+├── .prettierrc
+├── .prettierrc.js
+├── .remarkrc.js
+├── .repo_tree.txt
+├── .watchmanconfig
+├── App.tsx
+├── CHANGELOG.md
+├── CONTRIBUTING.md
+├── Gemfile
+├── Gemfile.lock
+├── MANUAL_TEST_CHECKLIST.md
+├── README.md
+├── app.json
+├── approach_S1-TASK-01.md
+├── approach_S1-TASK-02.md
+├── approach_S1-TASK-03.md
+├── approach_S1-TASK-04A.md
+├── approach_S1-TASK-04B.md
+├── approach_S1-TASK-05.md
+├── approach_S2-TASK-01.md
+├── approach_S2-TASK-02.md
+├── approach_S2-TASK-03.md
+├── approach_S2-TASK-04.md
+├── approach_S2-TASK-05.md
+├── approach_S3-TASK-01.md
+├── approach_S3-TASK-02.md
+├── approach_S3-TASK-03A.md
+├── approach_S3-TASK-03B.md
+├── approach_S3-TASK-04.md
+├── approach_S3-TASK-05.md
+├── approach_S3-TASK-06.md
+├── approach_S3-TASK-07.md
+├── approach_S4-TASK-01.md
+├── approach_S4-TASK-02.md
+├── approach_S5-TASK-01A.md
+├── approach_S5-TASK-01B.md
+├── approach_S5-TASK-02.md
+├── approach_S6-TASK-01.md
+├── approach_S6-TASK-02.md
+├── approach_S6-TASK-03.md
+├── babel.config.js
+├── create-debug-keystore.bat
+├── index.js
+├── input_files.json
+├── jest.config.js
+├── jest.setup.ts
+├── metro.config.js
+├── package-lock.json
+├── package.json
+├── relevant_files.txt
+├── sonar-project.properties
+├── sprint-progress-S1-TASK-04B.md
+├── sync-manager-test.js
+├── temp-hook-test.tsx
+├── temp-pagination-test.js
+├── tsconfig.json
+├── yarn.lock
+├── .bundle/
+│   └── config
+├── .github/
+├── __mocks__/
+│   └── react-native-keychain.js
+├── __tests__/
+│   ├── App.test.tsx
+│   ├── setupAxe.js
+│   ├── testRunner.ts
+│   ├── __snapshots__/
+│   │   └── DisabledFAB.test.tsx
+│   ├── a11y/
+│   │   ├── DocumentPicker.a11y.test.tsx
+│   │   ├── HomeScreen.a11y.test.tsx
+│   │   ├── LeadInfoTab.a11y.test.tsx
+│   │   ├── StatusChangeDialog.a11y.test.tsx
+│   │   └── TopBar.a11y.test.tsx
+│   ├── api/
+│   │   ├── leadApi.backend.test.ts
+│   │   ├── quotationQuery.test.ts
+│   │   └── servicesApi.test.ts
+│   ├── components/
+│   │   ├── LastSyncIndicator.test.tsx
+│   │   ├── LeadInfoTab.test.tsx
+│   │   ├── TopBar.test.tsx
+│   │   ├── common/
+│   │   │   ├── AppButton.test.tsx
+│   │   │   ├── ErrorBoundary.test.tsx
+│   │   │   ├── FloatingActionButton.test.tsx
+│   │   │   ├── OfflineBanner.test.tsx
+│   │   │   ├── TabErrorBoundary.test.tsx
+│   │   │   └── __snapshots__/
+│   │   │       └── AppButton.test.tsx.snap
+│   │   ├── dashboard/
+│   │   │   └── DashboardStatCard.test.tsx
+│   │   ├── documents/
+│   │   │   ├── DocumentGrid.test.tsx
+│   │   │   ├── DocumentThumbnail.test.tsx
+│   │   │   └── PermissionDeniedMessage.test.tsx
+│   │   └── leads/
+│   │       ├── EmptyLeadsState.test.tsx
+│   │       ├── LeadInfoTab.test.tsx
+│   │       ├── LeadTabPlaceholder.test.tsx
+│   │       └── StatusChangeDialog.test.tsx
+│   ├── config/
+│   │   ├── Config.test.ts
+│   │   ├── Network.test.ts
+│   │   └── Telemetry.test.ts
+│   ├── constants/
+│   │   └── sync.test.ts
+│   ├── contexts/
+│   │   └── ConnectivityContext.test.tsx
+│   ├── database/
+│   │   ├── DatabaseProvider.test.tsx
+│   │   ├── LeadDao.test.ts
+│   │   ├── QuotationDao.test.ts
+│   │   ├── SyncDao.test.ts
+│   │   ├── database.test.ts
+│   │   ├── schema.test.ts
+│   │   └── dao/
+│   │       └── CommissionDao.test.ts
+│   ├── helpers/
+│   │   └── mockConnectivity.ts
+│   ├── hooks/
+│   │   ├── useDashboardRefresh.test.ts
+│   │   ├── useDatabase.test.ts
+│   │   ├── useDocumentPicker.test.ts
+│   │   ├── useLeadById.test.ts
+│   │   ├── useMasterData.test.tsx
+│   │   ├── usePullToRefresh.test.tsx
+│   │   ├── useQuotationWizard.test.tsx
+│   │   ├── useQuotations.test.tsx
+│   │   └── useThemeToggle.test.ts
+│   ├── integration/
+│   │   ├── FinalSystemTest.test.ts
+│   │   ├── LeadDetailFlow.test.tsx
+│   │   ├── LeadStatusFlow.test.tsx
+│   │   ├── LeadsScreenSyncConsistency.test.tsx
+│   │   ├── OfflineErrorHandling.test.tsx
+│   │   ├── SyncSystemIntegration.test.ts
+│   │   ├── SyncSystemStressTest.test.ts
+│   │   ├── addLeadFlow.test.tsx
+│   │   ├── allDaos.test.ts
+│   │   ├── authBootstrap.test.tsx
+│   │   ├── authFlow.integration.test.ts
+│   │   ├── authWorkflow.integration.test.ts
+│   │   ├── dashboardSync.integration.test.ts
+│   │   ├── errorHandling.integration.test.ts
+│   │   ├── networkLayer.integration.test.ts
+│   │   ├── offlineUX.integration.test.ts
+│   │   ├── optimisticUpdates.test.ts
+│   │   ├── performanceIntegration.test.ts
+│   │   ├── quotationFlow.test.tsx
+│   │   ├── quotationSync.test.ts
+│   │   ├── reduxSQLiteRehydrate.test.ts
+│   │   ├── sqliteKeyGeneration.test.ts
+│   │   └── syncFlow.integration.test.ts
+│   ├── mocks/
+│   │   ├── NetInfoMock.ts
+│   │   ├── RNRestartMock.ts
+│   │   ├── ToastMock.ts
+│   │   ├── fetchMock.ts
+│   │   ├── mockServer.ts
+│   │   ├── navigationRefMock.ts
+│   │   └── syncMocks.ts
+│   ├── navigation/
+│   │   └── NavigationFlow.test.tsx
+│   ├── performance/
+│   │   ├── DashboardPerformance.test.tsx
+│   │   ├── LeadDetailPerformance.test.tsx
+│   │   ├── LeadInfoTab.performance.test.tsx
+│   │   ├── LeadsList.test.tsx
+│   │   ├── baselinePerformance.test.ts
+│   │   ├── documentGrid.perf.test.tsx
+│   │   ├── imageCompression.perf.test.ts
+│   │   ├── instrumentedPerformance.test.ts
+│   │   ├── memoryPerformance.test.ts
+│   │   ├── performanceBudget.test.ts
+│   │   ├── quotationListPerformance.test.tsx
+│   │   └── quotationPerformance.test.ts
+│   ├── screens/
+│   │   ├── AddLeadScreen.test.tsx
+│   │   ├── HomeScreen.test.tsx
+│   │   ├── LeadDetailScreen.tabs.test.tsx
+│   │   ├── LeadDetailScreen.test.tsx
+│   │   ├── MyLeadsScreen.test.tsx
+│   │   ├── auth/
+│   │   │   ├── LoginScreen.test.tsx
+│   │   │   └── OtpScreen.test.tsx
+│   │   └── quotations/
+│   │       ├── QuotationListItem.test.tsx
+│   │       └── QuotationsScreen.test.tsx
+│   ├── services/
+│   │   ├── PerformanceObserver.test.ts
+│   │   └── TelemetryService.test.ts
+│   ├── setup/
+│   │   ├── accessibility.setup.js
+│   │   ├── authTestUtils.tsx
+│   │   ├── sanityCheck.test.ts
+│   │   ├── sqlcipherImport.test.ts
+│   │   └── testUtils.tsx
+│   ├── store/
+│   │   ├── authSlice.test.ts
+│   │   ├── networkSliceIntegration.test.ts
+│   │   ├── preferencesSlice.test.ts
+│   │   ├── api/
+│   │   │   ├── authApi.test.ts
+│   │   │   ├── baseApi.test.ts
+│   │   │   ├── baseQuery.test.ts
+│   │   │   ├── dashboardApi.test.ts
+│   │   │   ├── leadApi.integration.test.ts
+│   │   │   ├── masterDataApi.test.ts
+│   │   │   └── quotationApi.test.ts
+│   │   ├── middleware/
+│   │   │   └── errorMiddleware.test.ts
+│   │   ├── slices/
+│   │   │   ├── customerSlice.test.ts
+│   │   │   ├── leadSlice.test.ts
+│   │   │   ├── networkSlice.test.ts
+│   │   │   └── quotationSlice.test.ts
+│   │   ├── thunks/
+│   │   │   └── authThunks.test.ts
+│   │   └── transforms/
+│   │       └── sqliteTransform.test.ts
+│   ├── sync/
+│   │   ├── DashboardSync.test.ts
+│   │   ├── SyncManager.test.ts
+│   │   ├── SyncScheduler.test.ts
+│   │   ├── SyncSchedulerLifecycle.test.ts
+│   │   ├── SyncSchedulerPerformance.test.ts
+│   │   └── SyncThrottle.test.ts
+│   ├── types/
+│   │   └── quotation.test.ts
+│   ├── utils/
+│   │   ├── AppStateManager.test.ts
+│   │   ├── KeychainHelper.test.ts
+│   │   ├── Logger.test.ts
+│   │   ├── PerformanceMonitor.test.ts
+│   │   ├── accessibility.ts
+│   │   ├── date.test.ts
+│   │   ├── errorMessage.test.ts
+│   │   ├── generateBadges.test.ts
+│   │   ├── imageCompressor.test.ts
+│   │   ├── performanceTestUtils.ts
+│   │   ├── telemetryTestUtils.ts
+│   │   ├── testHelpers.ts
+│   │   └── secureStorage/
+│   │       ├── KeychainHelper.test.ts
+│   │       └── SQLiteKeyHelper.test.ts
+│   └── validation/
+│       ├── addLeadSchema.test.ts
+│       ├── documentSchema.test.ts
+│       ├── leadSchemaIntegration.test.ts
+│       ├── statusValidation.comprehensive.test.ts
+│       ├── statusValidation.edge.test.ts
+│       ├── statusValidation.integration.test.ts
+│       ├── statusValidation.performance.test.ts
+│       └── statusValidation.test.ts
+├── android/
+│   ├── Gemfile
+│   ├── Gemfile.lock
+│   ├── build.gradle
+│   ├── gradle.properties
+│   ├── gradlew
+│   ├── gradlew.bat
+│   ├── local.properties
+│   ├── settings.gradle
+│   ├── app/
+│   │   ├── build.gradle
+│   │   ├── debug.keystore
+│   │   ├── proguard-rules.pro
+│   │   ├── r8-config.pro
+│   │   └── src/
+│   │       ├── debug/
+│   │       │   ├── AndroidManifest.xml
+│   │       │   └── java/
+│   │       │       └── com/
+│   │       │           └── cpapp/
+│   │       │               └── ReactNativeFlipper.java
+│   │       ├── main/
+│   │       │   ├── AndroidManifest.xml
+│   │       │   ├── assets/
+│   │       │   │   └── index.android.bundle
+│   │       │   ├── java/
+│   │       │   │   └── com/
+│   │       │   │       └── cpapp/
+│   │       │   │           ├── MainActivity.java
+│   │       │   │           └── MainApplication.java
+│   │       │   └── res/
+│   │       │       ├── drawable-mdpi/
+│   │       │       │   └── node_modules_reactnative_libraries_newappscreen_components_logo.png
+│   │       │       ├── drawable/
+│   │       │       │   └── rn_edit_text_material.xml
+│   │       │       ├── mipmap-hdpi/
+│   │       │       │   ├── ic_launcher.png
+│   │       │       │   └── ic_launcher_round.png
+│   │       │       ├── mipmap-mdpi/
+│   │       │       │   ├── ic_launcher.png
+│   │       │       │   └── ic_launcher_round.png
+│   │       │       ├── mipmap-xhdpi/
+│   │       │       │   ├── ic_launcher.png
+│   │       │       │   └── ic_launcher_round.png
+│   │       │       ├── mipmap-xxhdpi/
+│   │       │       │   ├── ic_launcher.png
+│   │       │       │   └── ic_launcher_round.png
+│   │       │       ├── mipmap-xxxhdpi/
+│   │       │       │   ├── ic_launcher.png
+│   │       │       │   └── ic_launcher_round.png
+│   │       │       └── values/
+│   │       │           ├── strings.xml
+│   │       │           └── styles.xml
+│   │       └── release/
+│   │           └── java/
+│   │               └── com/
+│   │                   └── cpapp/
+│   │                       └── ReactNativeFlipper.java
+│   ├── fastlane/
+│   │   ├── Appfile
+│   │   └── Fastfile
+│   ├── gradle/
+│   │   └── wrapper/
+│   │       ├── gradle-wrapper.jar
+│   │       └── gradle-wrapper.properties
+│   └── keystores/
+│       └── README.md
+├── azure/
+│   ├── performance-alerts-template.json
+│   ├── performance-dashboard-template.json
+│   ├── setup-rbac.ps1
+│   └── weekly-report-logic-app.json
+├── docs/
+│   ├── DEVICE_TESTING_MATRIX.md
+│   ├── DOCUMENTATION_CHECKLIST.md
+│   ├── L3-LLD-CPAPP.md
+│   ├── PERFORMANCE.md
+│   ├── PERFORMANCE_DASHBOARD.md
+│   ├── README.md
+│   ├── api-endpoint-reference-sheet.md
+│   ├── ci-cd-pipeline.md
+│   ├── sprint-progress-S3-TASK-02.md
+│   ├── sprint-progress-S3-TASK-05.md
+│   ├── telemetry-integration.md
+│   └── adr/
+│       ├── ADR-0001-ci-pipeline-toolchain.md
+│       ├── ADR-0002-navigation-state.md
+│       ├── ADR-0004-auth-guard.md
+│       ├── ADR-0006-sync-manager.md
+│       ├── ADR-0007-sync-scheduler.md
+│       ├── ADR-0009-lead-module-foundation.md
+│       ├── ADR-0012-add-lead-flow.md
+│       └── ADR-0014-lead-status-update.md
+├── e2e/
+│   ├── dashboardRefresh.e2e.js
+│   ├── init.ts
+│   ├── jest.config.js
+│   ├── leadDetail.e2e.js
+│   ├── leadDetailOffline.e2e.js
+│   ├── loginSuccess.e2e.ts
+│   ├── notifications.e2e.js
+│   ├── otpLockout.e2e.ts
+│   ├── quotationList.e2e.js
+│   ├── setup.ts
+│   ├── viewLeadsFlow.e2e.ts
+│   └── performance/
+│       ├── coldStart.perf.e2e.js
+│       └── navigation.perf.e2e.js
+├── fastlane/
+│   ├── AndroidFastfile
+│   ├── Fastfile
+│   ├── README.md
+│   └── iOSFastfile
+├── ios/
+│   ├── .xcode.env
+│   ├── Gemfile
+│   ├── Gemfile.lock
+│   ├── Podfile
+│   ├── Config/
+│   │   └── Release.xcconfig
+│   ├── certificates/
+│   │   └── README.md
+│   ├── cpapp.xcodeproj/
+│   │   ├── project.pbxproj
+│   │   ├── project.xcworkspace/
+│   │   │   └── contents.xcworkspacedata
+│   │   └── xcshareddata/
+│   │       └── xcschemes/
+│   │           └── cpapp.xcscheme
+│   ├── cpapp.xcworkspace/
+│   │   └── contents.xcworkspacedata
+│   ├── cpapp/
+│   │   ├── AppDelegate.h
+│   │   ├── AppDelegate.mm
+│   │   ├── Info.plist
+│   │   ├── LaunchScreen.storyboard
+│   │   ├── PrivacyInfo.xcprivacy
+│   │   ├── main.m
+│   │   └── Images.xcassets/
+│   │       ├── Contents.json
+│   │       └── AppIcon.appiconset/
+│   │           └── Contents.json
+│   ├── cpappTests/
+│   │   ├── Info.plist
+│   │   └── cpappTests.m
+│   ├── fastlane/
+│   │   ├── Appfile
+│   │   ├── Fastfile
+│   │   └── README.md
+│   └── scripts/
+│       ├── configure-build-settings.sh
+│       └── strip-debug-symbols.sh
+├── scripts/
+│   ├── build-android.sh
+│   ├── build-ios.sh
+│   ├── check-docs-quality.js
+│   ├── ci-performance-check.js
+│   ├── ci-test-local.sh
+│   ├── coverage-report.js
+│   ├── deploy-performance-dashboard.ps1
+│   ├── docs-metrics.js
+│   ├── docs-quality.js
+│   ├── generate-badges.js
+│   ├── generate-ci-badges.sh
+│   ├── generate-coverage-badge.js
+│   ├── measure-build-size.bat
+│   ├── measure-build-size.sh
+│   ├── performance-budget.json
+│   ├── performance-report-generator.js
+│   ├── performance-test-runner.sh
+│   ├── setup-ios.sh
+│   ├── switch-env.sh
+│   ├── test-coverage-comprehensive.sh
+│   ├── test-coverage.sh
+│   ├── test-performance-dashboard.ps1
+│   ├── update-badges.sh
+│   ├── validate-docs.js
+│   ├── validate-docs.sh
+│   ├── validate-performance-budget.js
+│   ├── validate-performance-overhead.js
+│   ├── verifyCoverage.js
+│   ├── verifyIntegration.js
+│   └── ci/
+│       └── require-envfile.sh
+├── src/
+│   ├── setupTests.ts
+│   ├── __tests__/
+│   │   ├── accessibility/
+│   │   │   └── NotificationBadge.a11y.test.ts
+│   │   ├── components/
+│   │   │   └── FloatingActionButton.test.tsx
+│   │   ├── database/
+│   │   │   ├── dao/
+│   │   │   │   └── LeadDao.test.ts
+│   │   │   └── migrations/
+│   │   │       └── v2_migration.test.ts
+│   │   ├── hooks/
+│   │   │   ├── useLeadsRefresh.test.tsx
+│   │   │   ├── usePaginatedLeads.basic.test.tsx
+│   │   │   ├── usePaginatedLeads.integration.test.tsx
+│   │   │   └── usePaginatedLeads.test.tsx
+│   │   ├── integration/
+│   │   │   ├── AutoLoadIntegration.test.tsx
+│   │   │   ├── SyncUnreadCount.integration.test.ts
+│   │   │   ├── pullToRefreshIntegration.simple.test.js
+│   │   │   └── pullToRefreshIntegration.test.tsx
+│   │   ├── mocks/
+│   │   │   ├── fetchMock.ts
+│   │   │   └── setup.js
+│   │   ├── models/
+│   │   │   └── LeadModel.test.ts
+│   │   ├── performance/
+│   │   │   └── FilteringPerformance.test.tsx
+│   │   ├── screens/
+│   │   │   └── MyLeadsScreen.fab.test.tsx
+│   │   ├── store/
+│   │   │   ├── api/
+│   │   │   │   ├── leadApi.test.ts
+│   │   │   │   └── notificationsApi.test.ts
+│   │   │   ├── selectors/
+│   │   │   │   ├── leadSelectors.performance.test.ts
+│   │   │   │   └── leadSelectors.test.ts
+│   │   │   └── slices/
+│   │   │       ├── leadSlice.test.ts
+│   │   │       ├── leadSlicePagination.test.ts
+│   │   │       └── leadSlicePaginationNext.test.ts
+│   │   ├── sync/
+│   │   │   └── SyncSystemIntegration.test.ts
+│   │   └── utils/
+│   │       ├── refreshLogic.test.js
+│   │       ├── syncManagerIntegration.test.js
+│   │       └── validators/
+│   │           └── apiEnvelope.test.ts
+│   ├── components/
+│   │   ├── PlaceholderAuthStack.tsx
+│   │   ├── PlaceholderMainTab.tsx
+│   │   ├── README.md
+│   │   ├── SimpleTestApp.tsx
+│   │   ├── auth/
+│   │   │   ├── AuthGuard.tsx
+│   │   │   └── index.ts
+│   │   ├── commissions/
+│   │   │   ├── CommissionFilterChips.tsx
+│   │   │   ├── CommissionFilterSheet.tsx
+│   │   │   ├── CommissionKPIBar.tsx
+│   │   │   ├── CommissionSearchBar.tsx
+│   │   │   └── EmptyCommissionsState.tsx
+│   │   ├── common/
+│   │   │   ├── AppButton.tsx
+│   │   │   ├── AppInitializer.tsx
+│   │   │   ├── AppTextInput.tsx
+│   │   │   ├── AuthBootstrap.tsx
+│   │   │   ├── DisabledTabToast.tsx
+│   │   │   ├── ErrorBanner.tsx
+│   │   │   ├── ErrorBoundary.tsx
+│   │   │   ├── ErrorTestComponent.tsx
+│   │   │   ├── FloatingActionButton.tsx
+│   │   │   ├── LastSyncIndicator.tsx
+│   │   │   ├── OfflineBanner.tsx
+│   │   │   ├── PullToRefreshControl.tsx
+│   │   │   ├── ScreenContainer.tsx
+│   │   │   ├── TabErrorBoundary.tsx
+│   │   │   ├── ToastConfig.tsx
+│   │   │   ├── Tooltip.tsx
+│   │   │   ├── TopBar.tsx
+│   │   │   └── index.ts
+│   │   ├── customers/
+│   │   │   ├── CustomerFilterSheet.tsx
+│   │   │   ├── CustomerKYCTab.tsx
+│   │   │   ├── CustomerLeadsTab.tsx
+│   │   │   ├── CustomerProfileTab.tsx
+│   │   │   ├── CustomerSearchBar.tsx
+│   │   │   └── EmptyCustomersState.tsx
+│   │   ├── dashboard/
+│   │   │   ├── DashboardStatCard.tsx
+│   │   │   └── index.ts
+│   │   ├── debug/
+│   │   │   └── StateDebugger.tsx
+│   │   ├── documents/
+│   │   │   ├── DocumentGrid.tsx
+│   │   │   ├── DocumentThumbnail.tsx
+│   │   │   ├── DocumentUploadErrorBoundary.tsx
+│   │   │   ├── PermissionDeniedMessage.tsx
+│   │   │   ├── UploadErrorState.tsx
+│   │   │   ├── UploadProgressBar.tsx
+│   │   │   ├── index.ts
+│   │   │   └── screens/
+│   │   │       └── ManualTestScreen.tsx
+│   │   ├── leads/
+│   │   │   ├── EmptyLeadsState.tsx
+│   │   │   ├── FilterSheet.tsx
+│   │   │   ├── LeadInfoTab.tsx
+│   │   │   ├── LeadTabPlaceholder.tsx
+│   │   │   ├── LeadsApiTest.tsx
+│   │   │   ├── LeadsApiTestComplete.tsx
+│   │   │   ├── LeadsApiTestPagination.tsx
+│   │   │   ├── SearchBar.tsx
+│   │   │   ├── StaleDataBanner.tsx
+│   │   │   ├── StatusChangeDialog.tsx
+│   │   │   ├── index.ts
+│   │   │   └── __tests__/
+│   │   │       └── SearchBar.test.tsx
+│   │   ├── navigation/
+│   │   │   └── NavigationWrapper.tsx
+│   │   ├── notifications/
+│   │   │   └── NotificationsList.tsx
+│   │   ├── quotations/
+│   │   │   ├── QuotationEmptyState.tsx
+│   │   │   ├── QuotationFilterSheet.tsx
+│   │   │   ├── QuotationSearchBar.tsx
+│   │   │   └── index.ts
+│   │   └── test/
+│   │       └── SyncManagerTestComponent.tsx
+│   ├── config/
+│   │   ├── Config.ts
+│   │   ├── Features.ts
+│   │   ├── Network.ts
+│   │   ├── Telemetry.ts
+│   │   └── api.ts
+│   ├── constants/
+│   │   ├── auth.ts
+│   │   ├── document.ts
+│   │   ├── leadStatus.ts
+│   │   ├── leadTabs.ts
+│   │   ├── quotationStatus.ts
+│   │   ├── strings.ts
+│   │   └── sync.ts
+│   ├── contexts/
+│   │   └── ConnectivityContext.tsx
+│   ├── database/
+│   │   ├── DatabaseProvider.tsx
+│   │   ├── database.ts
+│   │   ├── improvedMigrations.ts
+│   │   ├── migrations.ts
+│   │   ├── schema.ts
+│   │   ├── sqlcipherImport.ts
+│   │   ├── testDatabase.ts
+│   │   ├── testSQLCipher.ts
+│   │   ├── dao/
+│   │   │   ├── BaseDao.ts
+│   │   │   ├── CommissionDao.ts
+│   │   │   ├── CustomerDao.ts
+│   │   │   ├── DocumentDao.ts
+│   │   │   ├── LeadDao.ts
+│   │   │   ├── QuotationDao.ts
+│   │   │   ├── SyncDao.ts
+│   │   │   └── index.ts
+│   │   ├── migrations/
+│   │   │   └── steps/
+│   │   │       ├── v1_create_initial_tables.ts
+│   │   │       ├── v2_add_page_to_leads.ts
+│   │   │       ├── v3_add_documents_table.ts
+│   │   │       ├── v4_enhance_customer_and_documents.ts
+│   │   │       ├── v5_fix_documents_constraints.ts
+│   │   │       └── v6_add_commissions_table.ts
+│   │   ├── models/
+│   │   │   ├── Commission.ts
+│   │   │   ├── Customer.ts
+│   │   │   ├── Document.ts
+│   │   │   ├── Lead.ts
+│   │   │   ├── Quotation.ts
+│   │   │   └── SyncMetadata.ts
+│   │   └── utils/
+│   │       └── sqliteHelpers.ts
+│   ├── debug/
+│   │   ├── IconTest.tsx
+│   │   ├── ReduxStateViewer.tsx
+│   │   ├── TestCustomerEnhancementsScreen.tsx
+│   │   ├── checkApiImports.ts
+│   │   ├── checkStore.ts
+│   │   ├── testCustomerApi.ts
+│   │   ├── testCustomerDao.ts
+│   │   ├── testCustomerSlice.ts
+│   │   ├── testDashboardHydration.ts
+│   │   ├── testDocumentDao.ts
+│   │   ├── testKeyGeneration.ts
+│   │   ├── testNetworkSlice.ts
+│   │   └── testStore.ts
+│   ├── hooks/
+│   │   ├── index.ts
+│   │   ├── reduxHooks.ts
+│   │   ├── useBadgeSync.ts
+│   │   ├── useCommissionApi.ts
+│   │   ├── useConnectivityMemoized.ts
+│   │   ├── useDashboardRefresh.ts
+│   │   ├── useDatabase.ts
+│   │   ├── useDocumentCount.ts
+│   │   ├── useDocumentPicker.ts
+│   │   ├── useDocumentUpload.ts
+│   │   ├── useLeadById.ts
+│   │   ├── useLeadsRefresh.ts
+│   │   ├── useMasterData.ts
+│   │   ├── useNetworkStatus.ts
+│   │   ├── useOverdueBadge.ts
+│   │   ├── usePaginatedCommissions.ts
+│   │   ├── usePaginatedCustomers.ts
+│   │   ├── usePaginatedLeads.ts
+│   │   ├── usePerformanceMark.ts
+│   │   ├── usePullToRefresh.ts
+│   │   ├── useQuotationActions.ts
+│   │   ├── useQuotationDetail.ts
+│   │   ├── useQuotationSelector.ts
+│   │   ├── useQuotationWizard.ts
+│   │   ├── useQuotations.ts
+│   │   ├── useQuotationsByLead.ts
+│   │   ├── useThemeToggle.ts
+│   │   └── __tests__/
+│   │       └── useOverdueBadge.test.tsx
+│   ├── models/
+│   │   └── LeadModel.ts
+│   ├── navigation/
+│   │   ├── AppNavigator.tsx
+│   │   ├── AuthStack.tsx
+│   │   ├── CommissionStack.tsx
+│   │   ├── CustomerStack.tsx
+│   │   ├── HomeStack.tsx
+│   │   ├── MainDrawerNavigator.tsx
+│   │   ├── MainTabNavigator.tsx
+│   │   ├── NavigationProvider.tsx
+│   │   ├── NotificationsStack.tsx
+│   │   ├── PerformanceNavigationWrapper.tsx
+│   │   ├── deepLinks.ts
+│   │   ├── index.ts
+│   │   ├── navigationRef.ts
+│   │   └── types.ts
+│   ├── screens/
+│   │   ├── RootScreen_old.tsx
+│   │   ├── auth/
+│   │   │   ├── LoginScreen.tsx
+│   │   │   ├── OtpScreen.tsx
+│   │   │   └── SplashScreen.tsx
+│   │   ├── commissions/
+│   │   │   ├── CommissionListItem.tsx
+│   │   │   └── CommissionsScreen.tsx
+│   │   ├── customers/
+│   │   │   ├── CustomerDetailScreen.tsx
+│   │   │   ├── CustomerListItem.tsx
+│   │   │   └── CustomersScreen.tsx
+│   │   ├── documents/
+│   │   │   └── DocumentUploadScreen.tsx
+│   │   ├── home/
+│   │   │   └── HomeScreen.tsx
+│   │   ├── leads/
+│   │   │   ├── AddLeadScreen.tsx
+│   │   │   ├── LeadDetailScreen.tsx
+│   │   │   ├── LeadListItem.tsx
+│   │   │   └── MyLeadsScreen.tsx
+│   │   ├── notifications/
+│   │   │   └── NotificationsScreen.tsx
+│   │   ├── quotations/
+│   │   │   ├── QuotationListItem.tsx
+│   │   │   └── QuotationsScreen.tsx
+│   │   ├── settings/
+│   │   │   └── SettingsScreen.tsx
+│   │   └── test/
+│   │       ├── BackendTestScreen.tsx
+│   │       ├── CleanNotificationTest.tsx
+│   │       ├── CommissionTestScreen.tsx
+│   │       ├── MainStoreNotificationTest.tsx
+│   │       ├── MinimalStoreTest.tsx
+│   │       ├── NotificationsTestScreen.tsx
+│   │       └── ReduxDevToolsHelper.tsx
+│   ├── services/
+│   │   ├── DocumentSyncService.ts
+│   │   ├── DocumentUploadService.ts
+│   │   ├── PerformanceObserver.ts
+│   │   ├── QuotationSyncService.ts
+│   │   ├── SyncManager.ts
+│   │   ├── SyncService.ts
+│   │   ├── TelemetryService.ts
+│   │   ├── autoLoadService.ts
+│   │   ├── badgeService.ts
+│   │   ├── persistence.ts
+│   │   └── mocks/
+│   │       ├── documentMockService.ts
+│   │       └── nativeServices.ts
+│   ├── store/
+│   │   ├── PersistGateProvider.tsx
+│   │   ├── hooks.ts
+│   │   ├── index.ts
+│   │   ├── store.ts
+│   │   ├── testStore.ts
+│   │   ├── types.ts
+│   │   ├── api/
+│   │   │   ├── authApi.ts
+│   │   │   ├── baseApi.ts
+│   │   │   ├── baseQuery.ts
+│   │   │   ├── commissionApi.ts
+│   │   │   ├── customerApi.ts
+│   │   │   ├── dashboardApi.ts
+│   │   │   ├── documentApi.ts
+│   │   │   ├── index.ts
+│   │   │   ├── leadApi.ts
+│   │   │   ├── masterDataApi.ts
+│   │   │   ├── notificationsApi.ts
+│   │   │   ├── quotationApi.ts
+│   │   │   ├── servicesApi.ts
+│   │   │   └── simpleNotificationsApi.ts
+│   │   ├── middleware/
+│   │   │   └── errorMiddleware.ts
+│   │   ├── selectors/
+│   │   │   ├── commissionSelectors.ts
+│   │   │   ├── customerSelectors.ts
+│   │   │   ├── leadSelectors.ts
+│   │   │   └── quotationSelectors.ts
+│   │   ├── slices/
+│   │   │   ├── authSlice.ts
+│   │   │   ├── commissionSlice.ts
+│   │   │   ├── customerSlice.ts
+│   │   │   ├── documentCountSlice.ts
+│   │   │   ├── leadSlice.ts
+│   │   │   ├── networkSlice.ts
+│   │   │   ├── preferencesSlice.ts
+│   │   │   └── quotationSlice.ts
+│   │   ├── thunks/
+│   │   │   └── authThunks.ts
+│   │   └── transforms/
+│   │       └── sqliteTransform.ts
+│   ├── sync/
+│   │   ├── DashboardSync.ts
+│   │   ├── SyncManager.ts
+│   │   ├── SyncScheduler.ts
+│   │   ├── index.ts
+│   │   └── types.ts
+│   ├── theme/
+│   │   ├── ThemeProvider.tsx
+│   │   └── index.ts
+│   ├── types/
+│   │   ├── api.ts
+│   │   ├── document.ts
+│   │   ├── lead.ts
+│   │   ├── netinfo.d.ts
+│   │   ├── performance.ts
+│   │   ├── quotation.ts
+│   │   ├── react-native-config.d.ts
+│   │   ├── react-native-sqlcipher-storage.d.ts
+│   │   ├── react-native-sqlcipher-storage2.d.ts
+│   │   ├── react-native-vector-icons.d.ts
+│   │   ├── telemetry.ts
+│   │   ├── upload.ts
+│   │   └── api/
+│   │       ├── commission.ts
+│   │       ├── customer.ts
+│   │       ├── document.ts
+│   │       ├── leadStatus.ts
+│   │       ├── masterData.ts
+│   │       └── quotation.ts
+│   ├── utils/
+│   │   ├── AppStateManager.ts
+│   │   ├── Logger.ts
+│   │   ├── PerformanceMonitor.ts
+│   │   ├── SystemCleanup.ts
+│   │   ├── apiTransformers.ts
+│   │   ├── date.ts
+│   │   ├── dateHelpers.ts
+│   │   ├── errorMessage.ts
+│   │   ├── fileContentValidator.ts
+│   │   ├── formatFileSize.ts
+│   │   ├── imageCompressor.ts
+│   │   ├── index.ts
+│   │   ├── pdfHandler.ts
+│   │   ├── performance.ts
+│   │   ├── toastHelpers.ts
+│   │   ├── uuid.ts
+│   │   ├── database/
+│   │   │   └── SQLCipherTest.ts
+│   │   ├── secureStorage/
+│   │   │   ├── KeychainHelper.ts
+│   │   │   ├── SQLiteKeyHelper.ts
+│   │   │   └── cryptoPolyfill.ts
+│   │   └── validators/
+│   │       └── apiEnvelope.ts
+│   └── validation/
+│       ├── documentSchema.ts
+│       ├── index.ts
+│       ├── leadSchema.ts
+│       └── statusValidation.ts
+└── tests/
+    └── setup/
+        └── sanityCheck.test.ts

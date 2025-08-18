@@ -1,0 +1,305 @@
+{
+    "$schema": "https://json-schema.org/draft/2019-09/schema",
+    "title": "Solarium CP App Performance Budget",
+    "description": "Machine-readable performance budget definitions for automated validation",
+    "version": "1.0.0",
+    "budgets": {
+      "coldStart": {
+        "metricName": "cold_start_duration",
+        "target": {
+          "value": 2000,
+          "unit": "milliseconds",
+          "description": "Optimal cold start time for good user experience"
+        },
+        "maximum": {
+          "value": 3000,
+          "unit": "milliseconds",
+          "description": "Maximum acceptable cold start time"
+        },
+        "deviceTiers": {
+          "minimum": {
+            "target": 2500,
+            "maximum": 3500,
+            "description": "Adjusted for minimum spec devices"
+          },
+          "highEnd": {
+            "target": 1500,
+            "maximum": 2000,
+            "description": "Expected performance on high-end devices"
+          }
+        },
+        "testScenarios": [
+          "fresh_install",
+          "background_to_foreground", 
+          "device_reboot",
+          "low_memory_condition"
+        ]
+      },
+      "navigation": {
+        "metricName": "navigation_duration",
+        "target": {
+          "value": 200,
+          "unit": "milliseconds",
+          "description": "Smooth navigation threshold"
+        },
+        "maximum": {
+          "value": 300,
+          "unit": "milliseconds", 
+          "description": "Maximum acceptable navigation time"
+        },
+        "deviceTiers": {
+          "minimum": {
+            "target": 250,
+            "maximum": 400,
+            "description": "Adjusted for minimum spec devices"
+          },
+          "highEnd": {
+            "target": 150,
+            "maximum": 200,
+            "description": "Expected on high-end devices"
+          }
+        },
+        "testScenarios": [
+          "tab_navigation",
+          "deep_navigation",
+          "back_navigation",
+          "navigation_with_data_loading"
+        ]
+      },
+      "screenRender": {
+        "metricName": "screen_render_duration",
+        "target": {
+          "value": 300,
+          "unit": "milliseconds",
+          "description": "Target screen render time"
+        },
+        "maximum": {
+          "value": 500,
+          "unit": "milliseconds",
+          "description": "Maximum acceptable render time"
+        },
+        "deviceTiers": {
+          "minimum": {
+            "target": 400,
+            "maximum": 600,
+            "description": "Adjusted for minimum spec devices"
+          },
+          "highEnd": {
+            "target": 200,
+            "maximum": 300,
+            "description": "Expected on high-end devices"
+          }
+        },
+        "criticalScreens": [
+          "HomeScreen",
+          "MyLeadsScreen", 
+          "LeadDetailScreen",
+          "LoginScreen"
+        ]
+      },
+      "memory": {
+        "metricName": "memory_usage",
+        "target": {
+          "value": 104857600,
+          "unit": "bytes",
+          "description": "Target memory usage (100MB)"
+        },
+        "maximum": {
+          "value": 157286400,
+          "unit": "bytes",
+          "description": "Maximum memory usage (150MB)"
+        },
+        "deviceTiers": {
+          "minimum": {
+            "target": 83886080,
+            "maximum": 125829120,
+            "description": "Conservative limits for 2GB RAM devices (80MB/120MB)"
+          },
+          "highEnd": {
+            "target": 134217728,
+            "maximum": 201326592,
+            "description": "Higher limits for 6GB+ RAM devices (128MB/192MB)"
+          }
+        },
+        "monitoringConfig": {
+          "samplingInterval": 15000,
+          "alertThresholds": {
+            "warning": 0.8,
+            "critical": 0.95
+          }
+        }
+      },
+      "apiResponse": {
+        "metricName": "api_response_time",
+        "target": {
+          "value": 3000,
+          "unit": "milliseconds",
+          "description": "Target API response time"
+        },
+        "maximum": {
+          "value": 5000,
+          "unit": "milliseconds",
+          "description": "Maximum acceptable API response time"
+        },
+        "networkConditions": {
+          "wifi": {
+            "target": 2000,
+            "maximum": 3000
+          },
+          "4g": {
+            "target": 3000,
+            "maximum": 5000
+          },
+          "3g": {
+            "target": 5000,
+            "maximum": 8000
+          }
+        },
+        "criticalApis": [
+          "/auth/login",
+          "/leads/list",
+          "/dashboard/stats",
+          "/leads/detail"
+        ]
+      },
+      "bundleSize": {
+        "metricName": "bundle_size",
+        "target": {
+          "value": 20971520,
+          "unit": "bytes",
+          "description": "Target bundle size (20MB)"
+        },
+        "maximum": {
+          "value": 26214400,
+          "unit": "bytes",
+          "description": "Maximum bundle size (25MB)"
+        },
+        "platforms": {
+          "android": {
+            "apk": {
+              "target": 22020096,
+              "maximum": 27262976,
+              "description": "Android APK size limits (21MB/26MB)"
+            },
+            "aab": {
+              "target": 18874368,
+              "maximum": 23592960,
+              "description": "Android App Bundle size limits (18MB/22.5MB)"
+            }
+          },
+          "ios": {
+            "ipa": {
+              "target": 20971520,
+              "maximum": 26214400,
+              "description": "iOS IPA size limits (20MB/25MB)"
+            }
+          }
+        }
+      }
+    },
+    "instrumentation": {
+      "overheadBudget": {
+        "cpu": {
+          "target": 0.5,
+          "maximum": 1.0,
+          "unit": "percentage",
+          "description": "CPU overhead from performance monitoring"
+        },
+        "memory": {
+          "target": 5242880,
+          "maximum": 10485760,
+          "unit": "bytes",
+          "description": "Memory overhead (5MB target, 10MB max)"
+        },
+        "battery": {
+          "target": 1.0,
+          "maximum": 2.0,
+          "unit": "percentage",
+          "description": "Battery drain overhead"
+        },
+        "network": {
+          "target": 102400,
+          "maximum": 204800,
+          "unit": "bytes_per_session",
+          "description": "Network usage for telemetry (100KB target, 200KB max)"
+        }
+      },
+      "samplingRates": {
+        "development": 1.0,
+        "staging": 0.5,
+        "production": 0.1,
+        "description": "Telemetry sampling rates by environment"
+      }
+    },
+    "testing": {
+      "deviceTiers": {
+        "minimum": {
+          "android": {
+            "apiLevel": 26,
+            "ram": "2GB",
+            "cpu": "Snapdragon 425 or equivalent",
+            "referenceDevices": ["Samsung Galaxy J7", "Xiaomi Redmi 5A"]
+          },
+          "ios": {
+            "version": "13.0",
+            "ram": "2GB", 
+            "cpu": "A10 Bionic",
+            "referenceDevices": ["iPhone 7"]
+          }
+        },
+        "highEnd": {
+          "android": {
+            "apiLevel": "latest",
+            "ram": "6GB+",
+            "cpu": "Snapdragon 888 or equivalent",
+            "referenceDevices": ["Samsung Galaxy S21+", "Google Pixel 6"]
+          },
+          "ios": {
+            "version": "latest",
+            "ram": "6GB+",
+            "cpu": "A14 Bionic or newer", 
+            "referenceDevices": ["iPhone 12 Pro", "iPhone 13 Pro"]
+          }
+        }
+      },
+      "testEnvironments": {
+        "ci": {
+          "emulator": true,
+          "deviceFarm": false,
+          "description": "Fast feedback in CI pipeline"
+        },
+        "staging": {
+          "emulator": false,
+          "deviceFarm": true,
+          "description": "Real device testing before production"
+        },
+        "production": {
+          "realUsers": true,
+          "telemetry": true,
+          "description": "Production monitoring and alerting"
+        }
+      }
+    },
+    "validation": {
+      "required": true,
+      "failOnViolation": {
+        "ci": true,
+        "staging": true,
+        "production": false
+      },
+      "overrideProcess": {
+        "approverRole": "Tech Lead",
+        "documentationRequired": true,
+        "justificationRequired": true
+      }
+    },
+    "metadata": {
+      "created": "2024-01-01",
+      "lastUpdated": "2024-01-01",
+      "version": "1.0.0",
+      "owner": "Performance Engineering Team",
+      "reviewers": ["DevOps Team", "Mobile Development Team"],
+      "nextReview": "2024-02-01"
+    }
+  }
+  

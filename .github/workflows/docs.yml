@@ -1,0 +1,43 @@
+name: Documentation Validation
+
+on:
+  push:
+    branches: [ main, develop ]
+    paths: [ 'docs/**', 'README.md', '.markdownlint.json' ]
+  pull_request:
+    branches: [ main, develop ]
+    paths: [ 'docs/**', 'README.md', '.markdownlint.json' ]
+
+jobs:
+  validate-docs:
+    runs-on: ubuntu-latest
+    
+    steps:
+    - uses: actions/checkout@v4
+    
+    - name: Setup Node.js
+      uses: actions/setup-node@v4
+      with:
+        node-version: '18'
+        cache: 'yarn'
+    
+    - name: Install dependencies
+      run: |
+        yarn install
+        npm install -g markdownlint-cli
+    
+    - name: Lint markdown files
+      run: yarn docs:lint
+    
+    - name: Check documentation quality
+      run: yarn docs:quality
+    
+    - name: Validate documentation structure
+      run: yarn docs:validate
+    
+    - name: Upload quality report
+      uses: actions/upload-artifact@v3
+      if: always()
+      with:
+        name: docs-quality-report
+        path: docs-quality-report.json

@@ -1,0 +1,235 @@
+# iOS-specific Fastlane configuration
+# Handles iOS builds and deployments
+
+platform :ios do
+  
+  # Load iOS-specific environment
+  dotenv(
+    filename: "ios/fastlane/.env.default"
+  )
+  
+  desc "Build iOS debug app for simulator"
+  lane :ios_debug do
+    UI.header("🍎 Building iOS Debug App")
+    
+    # Display environment info
+    info
+    
+    # Ensure we're in the right directory
+    Dir.chdir("ios") do
+      
+      # Install CocoaPods dependencies
+      cocoapods(
+        clean_install: true,
+        try_repo_update_on_error: true
+      )
+      
+      # Build debug app
+      begin
+        gym(
+          scheme: ENV['IOS_SCHEME'] || 'cpapp',
+          workspace: ENV['IOS_WORKSPACE'] || 'cpapp.xcworkspace',
+          configuration: ENV['IOS_CONFIGURATION_DEBUG'] || 'Debug',
+          export_method: ENV['IOS_EXPORT_METHOD_DEBUG'] || 'development',
+          output_directory: ENV['BUILD_OUTPUT_DIRECTORY'] || '../fastlane/builds',
+          output_name: "ios-debug-#{ENV['REACT_APP_ENV']}-#{Time.now.strftime('%Y%m%d-%H%M%S')}.ipa",
+          clean: true,
+          skip_codesigning: false,
+          export_options: {
+            method: ENV['IOS_EXPORT_METHOD_DEBUG'] || 'development',
+            thinning: '<none>'
+          }
+        )
+        
+        UI.success("✅ iOS Debug build completed successfully")
+        UI.message("📱 IPA location: #{ENV['BUILD_OUTPUT_DIRECTORY']}")
+        
+      rescue => exception
+        UI.important("⚠️  Code signing failed, attempting simulator build...")
+        
+        # Fallback: Build for simulator (no signing required)
+        xcodebuild(
+          scheme: ENV['IOS_SCHEME'] || 'cpapp',
+          workspace: ENV['IOS_WORKSPACE'] || 'cpapp.xcworkspace',
+          configuration: ENV['IOS_CONFIGURATION_DEBUG'] || 'Debug',
+          sdk: 'iphonesimulator',
+          destination: 'platform=iOS Simulator,name=iPhone 14,OS=latest',
+          clean: true,
+          build_settings: {
+            "CODE_SIGN_IDENTITY" => "",
+            "CODE_SIGNING_REQUIRED" => "NO",
+            "CODE_SIGNING_ALLOWED" => "NO"
+          }
+        )
+        
+        UI.success("✅ iOS Simulator build completed successfully")
+        UI.message("📱 Simulator app built (no IPA generated)")
+      end
+    end
+  end
+  
+  desc "Build iOS release and upload to TestFlight"
+  lane :ios_beta do |options|
+    UI.header("🚀 Building iOS Release for TestFlight")
+    
+    # Display environment info
+    info
+    
+    # Validate environment for release builds
+    unless ENV['REACT_APP_ENV'] == 'staging' || ENV['REACT_APP_ENV'] == 'production'
+      UI.user_error!("❌ Beta builds only allowed for staging/production environments")
+    end
+    
+    # Check if App Store Connect API key exists
+    api_key_path = ENV['APP_STORE_CONNECT_API_KEY_PATH']
+    unless api_key_path && File.exist?(api_key_path)
+      UI.important("⚠️  App Store Connect API key not found at: #{api_key_path}")
+      UI.important("🔄 Falling back to debug build for now")
+      
+      # Build debug as fallback
+      ios_debug
+      return
+    end
+    
+    # Set up App Store Connect API key
+    app_store_connect_api_key(
+      key_id: ENV['APP_STORE_CONNECT_API_KEY_ID'],
+      issuer_id: ENV['APP_STORE_CONNECT_ISSUER_ID'],
+      key_filepath: api_key_path
+    )
+    
+    Dir.chdir("ios") do
+      
+      # Install CocoaPods dependencies
+      cocoapods(
+        clean_install: true,
+        try_repo_update_on_error: true
+      )
+      
+      # Handle code signing
+      if ENV['MATCH_GIT_URL'] && !ENV['MATCH_GIT_URL'].include?('placeholder')
+        UI.header("🔐 Setting up code signing with Match")
+        
+        # Get certificates and provisioning profiles
+        match(
+          type: "appstore",
+          git_url: ENV['MATCH_GIT_URL'],
+          app_identifier: ENV['IOS_APP_IDENTIFIER'] || 'com.solarium.cpapp',
+          team_id: ENV['IOS_TEAM_ID'],
+          keychain_name: ENV['MATCH_KEYCHAIN_NAME'] || 'fastlane_keychain',
+          keychain_password: ENV['MATCH_KEYCHAIN_PASSWORD']
+        )
+      else
+        UI.important("⚠️  Match not configured, using automatic signing")
+      end
+      
+      # Increment build number
+      increment_build_number(
+        xcodeproj: ENV['IOS_PROJECT'] || 'cpapp.xcodeproj'
+      )
+      
+      # Build release app
+      gym(
+        scheme: ENV['IOS_SCHEME'] || 'cpapp',
+        workspace: ENV['IOS_WORKSPACE'] || 'cpapp.xcworkspace',
+        configuration: ENV['IOS_CONFIGURATION_RELEASE'] || 'Release',
+        export_method: ENV['IOS_EXPORT_METHOD_RELEASE'] || 'app-store',
+        output_directory: ENV['BUILD_OUTPUT_DIRECTORY'] || '../fastlane/builds',
+        output_name: "ios-release-#{ENV['REACT_APP_ENV']}-#{Time.now.strftime('%Y%m%d-%H%M%S')}.ipa",
+        clean: true,
+        include_bitcode: false,
+        export_options: {
+          method: ENV['IOS_EXPORT_METHOD_RELEASE'] || 'app-store',
+          uploadBitcode: false,
+          uploadSymbols: true,
+          compileBitcode: false
+        }
+      )
+      
+      # Upload to TestFlight
+      UI.header("⬆️  Uploading to TestFlight")
+      
+      pilot(
+        ipa: lane_context[SharedValues::IPA_OUTPUT_PATH],
+        skip_waiting_for_build_processing: ENV['TESTFLIGHT_SKIP_WAITING_FOR_BUILD_PROCESSING'] == 'true',
+        groups: ENV['TESTFLIGHT_GROUPS']&.split(','),
+        changelog: options[:changelog] || "Automated build from #{ENV['REACT_APP_ENV']} environment"
+      )
+      
+      UI.success("✅ Successfully uploaded to TestFlight")
+    end
+  end
+  
+  desc "Upload existing IPA to TestFlight"
+  lane :upload_testflight do |options|
+    UI.header("⬆️  Uploading IPA to TestFlight")
+    
+    ipa_path = options[:ipa_path] || ENV['FASTLANE_BUILD_PATH']
+    
+    unless ipa_path && File.exist?(ipa_path)
+      UI.user_error!("❌ IPA not found. Please provide ipa_path or build first.")
+    end
+    
+    # Check if App Store Connect API key exists
+    api_key_path = ENV['APP_STORE_CONNECT_API_KEY_PATH']
+    unless api_key_path && File.exist?(api_key_path)
+      UI.user_error!("❌ App Store Connect API key not found at: #{api_key_path}")
+    end
+    
+    # Set up App Store Connect API key
+    app_store_connect_api_key(
+      key_id: ENV['APP_STORE_CONNECT_API_KEY_ID'],
+      issuer_id: ENV['APP_STORE_CONNECT_ISSUER_ID'],
+      key_filepath: api_key_path
+    )
+    
+    pilot(
+      ipa: ipa_path,
+      skip_waiting_for_build_processing: ENV['TESTFLIGHT_SKIP_WAITING_FOR_BUILD_PROCESSING'] == 'true',
+      groups: ENV['TESTFLIGHT_GROUPS']&.split(','),
+      changelog: options[:changelog] || "Manual upload to TestFlight"
+    )
+    
+    UI.success("✅ Successfully uploaded to TestFlight")
+  end
+  
+  desc "Generate signed IPA for distribution"
+  lane :build_release do
+    UI.header("📦 Building signed release IPA")
+    
+    # This is a wrapper around ios_beta without TestFlight upload
+    # We'll modify ios_beta to skip upload if specified
+    ios_beta
+  end
+  
+  desc "Setup code signing with Match"
+  lane :setup_signing do |options|
+    UI.header("🔐 Setting up iOS Code Signing")
+    
+    match_type = options[:type] || 'development'
+    
+    match(
+      type: match_type,
+      git_url: ENV['MATCH_GIT_URL'],
+      app_identifier: ENV['IOS_APP_IDENTIFIER'] || 'com.solarium.cpapp',
+      team_id: ENV['IOS_TEAM_ID'],
+      keychain_name: ENV['MATCH_KEYCHAIN_NAME'] || 'fastlane_keychain',
+      keychain_password: ENV['MATCH_KEYCHAIN_PASSWORD']
+    )
+    
+    UI.success("✅ Code signing setup completed for #{match_type}")
+  end
+  
+  desc "Install CocoaPods dependencies"
+  lane :pods do
+    Dir.chdir("ios") do
+      cocoapods(
+        clean_install: true,
+        try_repo_update_on_error: true
+      )
+    end
+    
+    UI.success("✅ CocoaPods dependencies installed")
+  end
+  
+end

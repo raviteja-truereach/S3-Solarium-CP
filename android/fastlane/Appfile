@@ -1,0 +1,25 @@
+# Fastlane Appfile
+# Global app configuration for Solarium CP App
+
+# Android configuration
+android_package_name("com.solarium.cpapp")
+
+# iOS configuration (for future use)
+app_identifier("com.solarium.cpapp")
+apple_id("praveen.gp@truereach.ai") # Placeholder - will be updated when iOS signing is ready
+
+# Team configuration (placeholders)
+# team_name("Solarium Green Energy")
+# team_id("TEAM_ID_PLACEHOLDER")
+
+# Git configuration
+git_url("git@github.com:tr-agent/SOLARIUM-CPAPP.git") # Update with actual repo URL
+
+# For logging
+for_platform :android do
+  # Android-specific configuration can go here
+end
+
+for_platform :ios do  
+  # iOS-specific configuration can go here
+end

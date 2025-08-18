@@ -1,0 +1,160 @@
+# Android-specific Fastlane configuration
+# Handles Android builds and deployments
+
+platform :android do
+  
+  # Load Android-specific environment
+  dotenv(
+    filename: "android/fastlane/.env.default"
+  )
+  
+  desc "Build Android debug APK"
+  lane :android_debug do
+    UI.header("🤖 Building Android Debug APK")
+    
+    # Display environment info
+    info
+    
+    # Ensure clean build
+    gradle(
+      project_dir: "android/",
+      task: "clean"
+    )
+    
+    # Build debug APK
+    gradle(
+      project_dir: "android/",
+      task: "assembleDebug",
+      properties: {
+        "ENVFILE" => ENV['ENVFILE']
+      }
+    )
+    
+    # Copy APK to builds directory
+    output_path = "builds/android-debug-#{ENV['REACT_APP_ENV']}-#{Time.now.strftime('%Y%m%d-%H%M%S')}.apk"
+    source_apk = "android/app/build/outputs/apk/debug/app-debug.apk"
+    
+    if File.exist?(source_apk)
+      FileUtils.cp(source_apk, output_path)
+      UI.success("✅ Debug APK built successfully")
+      UI.message("📱 APK location: #{output_path}")
+      
+      # Set environment variable for CI
+      ENV['FASTLANE_BUILD_PATH'] = output_path
+    else
+      UI.user_error!("❌ Debug APK not found at expected location: #{source_apk}")
+    end
+  end
+  
+  desc "Build Android release APK and upload to Google Play Internal"
+  lane :android_internal do |options|
+    UI.header("🚀 Building Android Release for Internal Testing")
+    
+    # Display environment info
+    info
+    
+    # Validate environment for release builds
+    unless ENV['REACT_APP_ENV'] == 'staging' || ENV['REACT_APP_ENV'] == 'production'
+      UI.user_error!("❌ Internal builds only allowed for staging/production environments")
+    end
+    
+    # Check if keystore exists (for release builds)
+    keystore_path = ENV['ANDROID_KEYSTORE_PATH'] || 'android/app/release.keystore'
+    unless File.exist?(keystore_path)
+      UI.important("⚠️  Release keystore not found at: #{keystore_path}")
+      UI.important("🔄 Falling back to debug signing for now")
+      
+      # Build debug APK as fallback
+      android_debug
+      return
+    end
+    
+    # Build release APK
+    gradle(
+      project_dir: "android/",
+      task: "clean assembleRelease",
+      properties: {
+        "ENVFILE" => ENV['ENVFILE'],
+        "android.injected.signing.store.file" => keystore_path,
+        "android.injected.signing.store.password" => ENV['ANDROID_KEYSTORE_PASSWORD'],
+        "android.injected.signing.key.alias" => ENV['ANDROID_KEY_ALIAS'],
+        "android.injected.signing.key.password" => ENV['ANDROID_KEY_PASSWORD']
+      }
+    )
+    
+    # Copy APK to builds directory
+    output_path = "builds/android-release-#{ENV['REACT_APP_ENV']}-#{Time.now.strftime('%Y%m%d-%H%M%S')}.apk"
+    source_apk = "android/app/build/outputs/apk/release/app-release.apk"
+    
+    if File.exist?(source_apk)
+      FileUtils.cp(source_apk, output_path)
+      UI.success("✅ Release APK built successfully")
+      UI.message("📱 APK location: #{output_path}")
+      
+      # Upload to Google Play Internal (if credentials available)
+      google_play_json_key = ENV['GOOGLE_PLAY_JSON_KEY_PATH']
+      
+      if google_play_json_key && File.exist?(google_play_json_key)
+        UI.header("⬆️  Uploading to Google Play Internal Testing")
+        
+        supply(
+          json_key: google_play_json_key,
+          package_name: ENV['GOOGLE_PLAY_PACKAGE_NAME'] || 'com.solarium.cpapp',
+          apk: source_apk,
+          track: 'internal',
+          skip_upload_metadata: true,
+          skip_upload_images: true,
+          skip_upload_screenshots: true
+        )
+        
+        UI.success("✅ Successfully uploaded to Google Play Internal Testing")
+      else
+        UI.important("⚠️  Google Play credentials not found - skipping upload")
+        UI.message("📋 To enable uploads, set GOOGLE_PLAY_JSON_KEY_PATH")
+      end
+      
+      # Set environment variable for CI
+      ENV['FASTLANE_BUILD_PATH'] = output_path
+    else
+      UI.user_error!("❌ Release APK not found at expected location: #{source_apk}")
+    end
+  end
+  
+  desc "Upload existing APK to Google Play Internal"
+  lane :upload_internal do |options|
+    UI.header("⬆️  Uploading APK to Google Play Internal Testing")
+    
+    apk_path = options[:apk_path] || ENV['FASTLANE_BUILD_PATH']
+    
+    unless apk_path && File.exist?(apk_path)
+      UI.user_error!("❌ APK not found. Please provide apk_path or build first.")
+    end
+    
+    google_play_json_key = ENV['GOOGLE_PLAY_JSON_KEY_PATH']
+    
+    unless google_play_json_key && File.exist?(google_play_json_key)
+      UI.user_error!("❌ Google Play credentials not found at: #{google_play_json_key}")
+    end
+    
+    supply(
+      json_key: google_play_json_key,
+      package_name: ENV['GOOGLE_PLAY_PACKAGE_NAME'] || 'com.solarium.cpapp',
+      apk: apk_path,
+      track: 'internal',
+      skip_upload_metadata: true,
+      skip_upload_images: true,
+      skip_upload_screenshots: true
+    )
+    
+    UI.success("✅ Successfully uploaded to Google Play Internal Testing")
+  end
+  
+  desc "Generate signed APK for distribution"
+  lane :build_release do
+    UI.header("📦 Building signed release APK")
+    
+    # This is a wrapper around android_internal without upload
+    android_internal
+  end
+  
+end

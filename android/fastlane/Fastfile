@@ -1,0 +1,65 @@
+# Fastlane Configuration
+# Automation for Solarium CP App builds and deployments
+
+# Minimum Fastlane version
+fastlane_version "2.210.0"
+
+# Environment validation - fail fast if ENVFILE not provided
+unless ENV['ENVFILE']
+  UI.user_error!("❌ ENVFILE is missing – aborting build.")
+  UI.important("Usage: ENVFILE=.env.development fastlane android_debug")
+  UI.important("Available environments: .env.development, .env.staging, .env.production")
+end
+
+# Load environment-specific configuration
+dotenv(
+  filename: ENV['ENVFILE']
+)
+
+# Default platform
+default_platform(:android)
+
+# Import platform-specific configurations
+import("./AndroidFastfile")
+
+# Global lanes that work across platforms
+desc "Display environment information"
+lane :info do
+  UI.header("🔍 Environment Information")
+  UI.message("📱 App: Solarium CP")
+  UI.message("🌍 Environment: #{ENV['REACT_APP_ENV']}")
+  UI.message("🔗 API URL: #{ENV['REACT_APP_BASE_URL']}")
+  UI.message("📄 Config File: #{ENV['ENVFILE']}")
+  UI.message("⏰ Build Time: #{Time.now}")
+end
+
+desc "Clean build artifacts"
+lane :clean do
+  UI.header("🧹 Cleaning build artifacts")
+  
+  # Clean fastlane builds directory
+  sh("rm -rf builds/*") rescue nil
+  
+  # Clean Android build
+  gradle(
+    project_dir: "android/",
+    task: "clean"
+  )
+  
+  UI.success("✅ Build artifacts cleaned")
+end
+
+# Error handling
+error do |lane, exception|
+  UI.error("❌ Lane '#{lane}' failed with exception:")
+  UI.error(exception.message)
+  
+  # Log additional context
+  UI.header("🔍 Debug Information")
+  UI.message("Environment: #{ENV['REACT_APP_ENV']}")
+  UI.message("Config file: #{ENV['ENVFILE']}")
+  UI.message("Time: #{Time.now}")
+end
+
+# Import iOS-specific configuration
+import("./iOSFastfile")

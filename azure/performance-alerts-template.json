@@ -1,0 +1,261 @@
+{
+    "$schema": "https://schema.management.azure.com/schemas/2015-01-01/deploymentTemplate.json#",
+    "contentVersion": "1.0.0.0",
+    "parameters": {
+      "applicationInsightsName": {
+        "type": "string",
+        "metadata": {
+          "description": "Name of the Application Insights resource"
+        }
+      },
+      "actionGroupName": {
+        "type": "string",
+        "defaultValue": "performance-alerts-action-group",
+        "metadata": {
+          "description": "Name of the action group for alerts"
+        }
+      },
+      "emailAddress": {
+        "type": "string",
+        "metadata": {
+          "description": "Email address for alert notifications"
+        }
+      },
+      "slackWebhookUrl": {
+        "type": "string",
+        "defaultValue": "",
+        "metadata": {
+          "description": "Slack webhook URL for notifications (optional)"
+        }
+      }
+    },
+    "variables": {
+      "applicationInsightsResourceId": "[resourceId('Microsoft.Insights/components', parameters('applicationInsightsName'))]"
+    },
+    "resources": [
+      {
+        "type": "Microsoft.Insights/actionGroups",
+        "apiVersion": "2023-01-01",
+        "name": "[parameters('actionGroupName')]",
+        "location": "Global",
+        "properties": {
+          "groupShortName": "PerfAlerts",
+          "enabled": true,
+          "emailReceivers": [
+            {
+              "name": "DevOpsTeam",
+              "emailAddress": "[parameters('emailAddress')]",
+              "useCommonAlertSchema": true
+            }
+          ],
+          "webhookReceivers": "[if(empty(parameters('slackWebhookUrl')), json('[]'), createArray(createObject('name', 'SlackWebhook', 'serviceUri', parameters('slackWebhookUrl'), 'useCommonAlertSchema', true)))]"
+        }
+      },
+      {
+        "type": "Microsoft.Insights/scheduledQueryRules",
+        "apiVersion": "2023-03-15-preview",
+        "name": "cold-start-performance-alert",
+        "location": "[resourceGroup().location]",
+        "dependsOn": [
+          "[resourceId('Microsoft.Insights/actionGroups', parameters('actionGroupName'))]"
+        ],
+        "properties": {
+          "displayName": "Cold Start Performance Alert",
+          "description": "Alert when cold start time exceeds budget thresholds",
+          "severity": 2,
+          "enabled": true,
+          "evaluationFrequency": "PT5M",
+          "windowSize": "PT15M",
+          "criteria": {
+            "allOf": [
+              {
+                "query": "customEvents\n| where name == \"AppStart\"\n| extend startupDuration = toreal(customDimensions.startupDuration)\n| extend deviceTier = tostring(customDimensions.deviceTier)\n| where isnotempty(startupDuration)\n| summarize avg_duration = avg(startupDuration) by deviceTier\n| where (deviceTier == \"minimum\" and avg_duration > 3500) or (deviceTier == \"high-end\" and avg_duration > 2000) or (deviceTier == \"ci\" and avg_duration > 3000)",
+                "timeAggregation": "Count",
+                "operator": "GreaterThan",
+                "threshold": 0,
+                "failingPeriods": {
+                  "numberOfEvaluationPeriods": 2,
+                  "minFailingPeriodsToAlert": 2
+                }
+              }
+            ]
+          },
+          "actions": {
+            "actionGroups": [
+              "[resourceId('Microsoft.Insights/actionGroups', parameters('actionGroupName'))]"
+            ],
+            "customProperties": {
+              "alertType": "cold-start-performance",
+              "severity": "warning"
+            }
+          }
+        }
+      },
+      {
+        "type": "Microsoft.Insights/scheduledQueryRules",
+        "apiVersion": "2023-03-15-preview",
+        "name": "navigation-performance-alert",
+        "location": "[resourceGroup().location]",
+        "dependsOn": [
+          "[resourceId('Microsoft.Insights/actionGroups', parameters('actionGroupName'))]"
+        ],
+        "properties": {
+          "displayName": "Navigation Performance Alert",
+          "description": "Alert when navigation time exceeds budget thresholds",
+          "severity": 2,
+          "enabled": true,
+          "evaluationFrequency": "PT5M",
+          "windowSize": "PT15M",
+          "criteria": {
+            "allOf": [
+              {
+                "query": "customEvents\n| where name == \"UserInteraction\" and customDimensions.action == \"navigation\"\n| extend duration = toreal(customDimensions.duration)\n| extend deviceTier = tostring(customDimensions.deviceTier)\n| where isnotempty(duration)\n| summarize avg_duration = avg(duration) by deviceTier\n| where (deviceTier == \"minimum\" and avg_duration > 400) or (deviceTier == \"high-end\" and avg_duration > 200) or (deviceTier == \"ci\" and avg_duration > 300)",
+                "timeAggregation": "Count",
+                "operator": "GreaterThan",
+                "threshold": 0,
+                "failingPeriods": {
+                  "numberOfEvaluationPeriods": 2,
+                  "minFailingPeriodsToAlert": 2
+                }
+              }
+            ]
+          },
+          "actions": {
+            "actionGroups": [
+              "[resourceId('Microsoft.Insights/actionGroups', parameters('actionGroupName'))]"
+            ],
+            "customProperties": {
+              "alertType": "navigation-performance",
+              "severity": "warning"
+            }
+          }
+        }
+      },
+      {
+        "type": "Microsoft.Insights/scheduledQueryRules",
+        "apiVersion": "2023-03-15-preview",
+        "name": "memory-usage-alert",
+        "location": "[resourceGroup().location]",
+        "dependsOn": [
+          "[resourceId('Microsoft.Insights/actionGroups', parameters('actionGroupName'))]"
+        ],
+        "properties": {
+          "displayName": "Memory Usage Alert",
+          "description": "Alert when memory usage exceeds budget thresholds",
+          "severity": 1,
+          "enabled": true,
+          "evaluationFrequency": "PT5M",
+          "windowSize": "PT15M",
+          "criteria": {
+            "allOf": [
+              {
+                "query": "customEvents\n| where name == \"Memory\"\n| extend usedMemory = toreal(customDimensions.usedMemory)\n| extend deviceTier = tostring(customDimensions.deviceTier)\n| where isnotempty(usedMemory)\n| summarize avg_memory = avg(usedMemory) by deviceTier\n| where (deviceTier == \"minimum\" and avg_memory > 125829120) or (deviceTier == \"high-end\" and avg_memory > 201326592) or (deviceTier == \"ci\" and avg_memory > 157286400)",
+                "timeAggregation": "Count",
+                "operator": "GreaterThan",
+                "threshold": 0,
+                "failingPeriods": {
+                  "numberOfEvaluationPeriods": 3,
+                  "minFailingPeriodsToAlert": 2
+                }
+              }
+            ]
+          },
+          "actions": {
+            "actionGroups": [
+              "[resourceId('Microsoft.Insights/actionGroups', parameters('actionGroupName'))]"
+            ],
+            "customProperties": {
+              "alertType": "memory-usage",
+              "severity": "critical"
+            }
+          }
+        }
+      },
+      {
+        "type": "Microsoft.Insights/scheduledQueryRules",
+        "apiVersion": "2023-03-15-preview",
+        "name": "performance-budget-violations-alert",
+        "location": "[resourceGroup().location]",
+        "dependsOn": [
+          "[resourceId('Microsoft.Insights/actionGroups', parameters('actionGroupName'))]"
+        ],
+        "properties": {
+          "displayName": "Performance Budget Violations Alert",
+          "description": "Alert when performance budget violations exceed threshold",
+          "severity": 2,
+          "enabled": true,
+          "evaluationFrequency": "PT10M",
+          "windowSize": "PT30M",
+          "criteria": {
+            "allOf": [
+              {
+                "query": "customEvents\n| where name == \"budget_violation\"\n| extend severity = tostring(customDimensions.severity)\n| extend metricType = tostring(customDimensions.metricType)\n| summarize \n    critical_violations = countif(severity == \"error\"),\n    warning_violations = countif(severity == \"warning\")\n    by metricType\n| where critical_violations > 5 or warning_violations > 10",
+                "timeAggregation": "Count",
+                "operator": "GreaterThan",
+                "threshold": 0,
+                "failingPeriods": {
+                  "numberOfEvaluationPeriods": 2,
+                  "minFailingPeriodsToAlert": 1
+                }
+              }
+            ]
+          },
+          "actions": {
+            "actionGroups": [
+              "[resourceId('Microsoft.Insights/actionGroups', parameters('actionGroupName'))]"
+            ],
+            "customProperties": {
+              "alertType": "budget-violations",
+              "severity": "warning"
+            }
+          }
+        }
+      },
+      {
+        "type": "Microsoft.Insights/scheduledQueryRules",
+        "apiVersion": "2023-03-15-preview",
+        "name": "instrumentation-overhead-alert",
+        "location": "[resourceGroup().location]",
+        "dependsOn": [
+          "[resourceId('Microsoft.Insights/actionGroups', parameters('actionGroupName'))]"
+        ],
+        "properties": {
+          "displayName": "Instrumentation Overhead Alert",
+          "description": "Alert when performance monitoring overhead exceeds 1%",
+          "severity": 3,
+          "enabled": true,
+          "evaluationFrequency": "PT15M",
+          "windowSize": "PT1H",
+          "criteria": {
+            "allOf": [
+              {
+                "query": "customEvents\n| where name == \"Performance\"\n| extend overhead = toreal(customDimensions.overhead)\n| where isnotempty(overhead)\n| summarize avg_overhead = avg(overhead)\n| where avg_overhead > 0.01",
+                "timeAggregation": "Count",
+                "operator": "GreaterThan",
+                "threshold": 0,
+                "failingPeriods": {
+                  "numberOfEvaluationPeriods": 2,
+                  "minFailingPeriodsToAlert": 2
+                }
+              }
+            ]
+          },
+          "actions": {
+            "actionGroups": [
+              "[resourceId('Microsoft.Insights/actionGroups', parameters('actionGroupName'))]"
+            ],
+            "customProperties": {
+              "alertType": "instrumentation-overhead",
+              "severity": "info"
+            }
+          }
+        }
+      }
+    ],
+    "outputs": {
+      "actionGroupResourceId": {
+        "type": "string",
+        "value": "[resourceId('Microsoft.Insights/actionGroups', parameters('actionGroupName'))]"
+      }
+    }
+  }

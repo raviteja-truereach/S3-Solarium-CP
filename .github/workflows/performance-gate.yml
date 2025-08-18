@@ -1,0 +1,249 @@
+name: Performance Gate
+
+on:
+  pull_request:
+    branches: [ main, staging, production ]
+    types: [opened, synchronize, reopened]
+
+env:
+  NODE_VERSION: '18'
+  JAVA_VERSION: '11'
+
+jobs:
+  performance-check:
+    name: Performance Budget Validation
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    
+    strategy:
+      matrix:
+        device-tier: [minimum, high-end]
+        platform: [android]
+        # Add iOS when macOS runners are available
+        # include:
+        #   - device-tier: minimum
+        #     platform: ios
+        #   - device-tier: high-end
+        #     platform: ios
+    
+    steps:
+      - name: 📥 Checkout code
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      
+      - name: 📱 Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: 'yarn'
+      
+      - name: ☕ Setup Java
+        uses: actions/setup-java@v4
+        with:
+          distribution: 'zulu'
+          java-version: ${{ env.JAVA_VERSION }}
+      
+      - name: 🔧 Setup Android SDK
+        uses: android-actions/setup-android@v3
+        with:
+          api-level: 29
+          build-tools: 30.0.3
+          
+      - name: 📦 Install dependencies
+        run: |
+          yarn install --frozen-lockfile
+          yarn global add @detox/cli
+      
+      - name: 🔨 Build Android APK for testing
+        if: matrix.platform == 'android'
+        run: |
+          cd android
+          ./gradlew assembleDebug assembleAndroidTest -DtestBuildType=debug
+          cd ..
+      
+      - name: 🚀 Start Metro bundler
+        run: |
+          yarn start --reset-cache &
+          sleep 30
+      
+      - name: 📱 Create Android emulator
+        if: matrix.platform == 'android'
+        run: |
+          # Create emulator based on device tier
+          if [ "${{ matrix.device-tier }}" == "minimum" ]; then
+            echo "no" | avdmanager create avd --force -n test_emulator -k "system-images;android-29;default;x86_64" --device "Nexus 5" --ram 2048
+          else
+            echo "no" | avdmanager create avd --force -n test_emulator -k "system-images;android-29;google_apis;x86_64" --device "pixel_4" --ram 6144
+          fi
+          
+          # Start emulator
+          $ANDROID_HOME/emulator/emulator -avd test_emulator -no-audio -no-window -gpu swiftshader_indirect -no-snapshot -wipe-data &
+          
+          # Wait for emulator to be ready
+          timeout 300 bash -c 'until adb shell getprop sys.boot_completed | grep -q 1; do sleep 5; done'
+          adb devices
+      
+      - name: 🧪 Run Performance Tests
+        env:
+          DEVICE_TIER: ${{ matrix.device-tier }}
+          PLATFORM: ${{ matrix.platform }}
+          DETOX_CONFIGURATION: android.emu.debug
+          PR_TITLE: ${{ github.event.pull_request.title }}
+          PR_BODY: ${{ github.event.pull_request.body }}
+          PR_AUTHOR: ${{ github.event.pull_request.user.login }}
+        run: |
+          # Run the CI performance check script
+          node scripts/ci-performance-check.js
+      
+      - name: 📊 Upload Performance Reports
+        uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: performance-report-${{ matrix.device-tier }}-${{ matrix.platform }}
+          path: |
+            reports/performance/
+            !reports/performance/*.log
+          retention-days: 30
+      
+      - name: 💬 Comment PR with Performance Report
+        uses: actions/github-script@v7
+        if: always() && env.PERFORMANCE_REPORT_FILE
+        with:
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          script: |
+            const fs = require('fs');
+            const path = require('path');
+            
+            // Read the performance report
+            const reportPath = process.env.PERFORMANCE_REPORT_FILE;
+            if (!fs.existsSync(reportPath)) {
+              console.log('No performance report found');
+              return;
+            }
+            
+            const report = fs.readFileSync(reportPath, 'utf8');
+            const deviceTier = '${{ matrix.device-tier }}';
+            const platform = '${{ matrix.platform }}';
+            
+            // Create or update comment
+            const commentBody = `## 📱 Performance Report (${deviceTier} ${platform})\n\n${report}`;
+            
+            // Find existing comment
+            const comments = await github.rest.issues.listComments({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              issue_number: context.issue.number
+            });
+            
+            const existingComment = comments.data.find(comment => 
+              comment.body.includes(`Performance Report (${deviceTier} ${platform})`)
+            );
+            
+            if (existingComment) {
+              // Update existing comment
+              await github.rest.issues.updateComment({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                comment_id: existingComment.id,
+                body: commentBody
+              });
+            } else {
+              // Create new comment
+              await github.rest.issues.createComment({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                issue_number: context.issue.number,
+                body: commentBody
+              });
+            }
+
+  performance-summary:
+    name: Performance Summary
+    runs-on: ubuntu-latest
+    needs: performance-check
+    if: always()
+    
+    steps:
+      - name: 📥 Checkout code
+        uses: actions/checkout@v4
+      
+      - name: 📱 Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+      
+      - name: 📥 Download all performance reports
+        uses: actions/download-artifact@v4
+        with:
+          path: performance-reports/
+          pattern: performance-report-*
+      
+      - name: 📊 Generate Combined Report
+        run: |
+          # Create combined performance report
+          node -e "
+          const fs = require('fs');
+          const path = require('path');
+          
+          let combinedReport = '# 📱 Combined Performance Report\\n\\n';
+          
+          // Process each device tier and platform combination
+          const reportDirs = fs.readdirSync('performance-reports/', { withFileTypes: true })
+            .filter(dirent => dirent.isDirectory())
+            .map(dirent => dirent.name);
+          
+          reportDirs.forEach(dir => {
+            const reportPath = path.join('performance-reports', dir, 'performance-report.md');
+            if (fs.existsSync(reportPath)) {
+              const report = fs.readFileSync(reportPath, 'utf8');
+              combinedReport += '\\n---\\n\\n' + report;
+            }
+          });
+          
+          fs.writeFileSync('combined-performance-report.md', combinedReport);
+          console.log('Combined report generated');
+          "
+      
+      - name: 💬 Post Combined Performance Summary
+        uses: actions/github-script@v7
+        with:
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          script: |
+            const fs = require('fs');
+            
+            if (!fs.existsSync('combined-performance-report.md')) {
+              console.log('No combined report found');
+              return;
+            }
+            
+            const report = fs.readFileSync('combined-performance-report.md', 'utf8');
+            
+            // Find and update summary comment
+            const comments = await github.rest.issues.listComments({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              issue_number: context.issue.number
+            });
+            
+            const summaryComment = comments.data.find(comment => 
+              comment.body.includes('Combined Performance Report')
+            );
+            
+            const commentBody = `## 📊 Performance Gate Summary\n\n${report}\n\n---\n*Automated performance validation completed*`;
+            
+            if (summaryComment) {
+              await github.rest.issues.updateComment({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                comment_id: summaryComment.id,
+                body: commentBody
+              });
+            } else {
+              await github.rest.issues.createComment({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                issue_number: context.issue.number,
+                body: commentBody
+              });
+            }

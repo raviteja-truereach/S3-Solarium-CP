@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="utf-8"?>
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="108dp"
+    android:height="108dp"
+    android:viewportWidth="108"
+    android:viewportHeight="108">
+    
+    <!-- Your logo/icon here - you can use vector paths or reference a PNG -->
+    <!-- Example with text (replace with your actual logo) -->
+    <group android:scaleX="0.5"
+           android:scaleY="0.5"
+           android:translateX="27"
+           android:translateY="27">
+        <!-- Add your logo vector paths here -->
+        <path android:fillColor="#FFFFFF"
+              android:pathData="M20,20L80,20L80,80L20,80Z"/> <!-- Example rectangle -->
+    </group>
+</vector>

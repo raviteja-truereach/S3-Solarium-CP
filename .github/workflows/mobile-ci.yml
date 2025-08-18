@@ -1,0 +1,125 @@
+name: CI/CD Pipeline
+
+on:
+  push:
+    branches: [ main, develop ]
+  pull_request:
+    branches: [ main ]
+
+jobs:
+  test:
+    name: Test & Coverage
+    runs-on: ubuntu-latest
+    
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v3
+      with:
+        fetch-depth: 0
+    
+    - name: Setup Node.js
+      uses: actions/setup-node@v3
+      with:
+        node-version: '18'
+        cache: 'npm'
+    
+    - name: Install dependencies
+      run: npm ci
+    
+    - name: Run linter
+      run: npm run lint
+    
+    - name: Run type check
+      run: npm run type-check
+    
+    - name: Run unit tests with coverage
+      run: npm run test:coverage
+    
+    - name: Run accessibility tests
+      run: npm run test:a11y
+    
+    - name: Generate coverage badges
+      run: npm run generate-badges
+    
+    - name: Upload coverage to Codecov
+      uses: codecov/codecov-action@v3
+      with:
+        file: ./coverage/lcov.info
+        flags: unittests
+        name: codecov-umbrella
+        fail_ci_if_error: true
+    
+    - name: SonarQube Scan
+      uses: sonarqube-quality-gate-action@master
+      env:
+        SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
+        SONAR_HOST_URL: ${{ secrets.SONAR_HOST_URL }}
+    
+    - name: Check coverage thresholds
+      run: |
+        npm run test:coverage -- --passWithNoTests
+        if [ $? -ne 0 ]; then
+          echo "❌ Coverage thresholds not met"
+          exit 1
+        fi
+        echo "✅ Coverage thresholds met"
+
+  e2e:
+    name: E2E Tests
+    runs-on: ubuntu-latest
+    needs: test
+    
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v3
+    
+    - name: Setup Node.js
+      uses: actions/setup-node@v3
+      with:
+        node-version: '18'
+        cache: 'npm'
+    
+    - name: Install dependencies
+      run: npm ci
+    
+    - name: Setup Android SDK
+      uses: android-actions/setup-android@v2
+    
+    - name: Build Android APK
+      run: |
+        cd android
+        ./gradlew assembleDebug assembleAndroidTest -DtestBuildType=debug
+    
+    - name: Run Detox E2E tests
+      run: |
+        npm run detox:android:test -- --headless
+      env:
+        DETOX_CONFIGURATION: android.emu.debug
+    
+    - name: Upload E2E artifacts
+      uses: actions/upload-artifact@v3
+      if: failure()
+      with:
+        name: e2e-artifacts
+        path: |
+          e2e/screenshots/
+          e2e/videos/
+
+  quality-gate:
+    name: Quality Gate
+    runs-on: ubuntu-latest
+    needs: [test, e2e]
+    
+    steps:
+    - name: Quality Gate Status Check
+      run: |
+        echo "🎯 All quality gates passed!"
+        echo "✅ Unit tests: ${{ needs.test.result }}"
+        echo "✅ E2E tests: ${{ needs.e2e.result }}"
+        
+        if [ "${{ needs.test.result }}" != "success" ] || [ "${{ needs.e2e.result }}" != "success" ]; then
+          echo "❌ Quality gate failed"
+          exit 1
+        fi
+        
+        echo "🚀 Ready for deployment"

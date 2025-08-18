@@ -1,0 +1,191 @@
+{
+    "$schema": "https://schema.management.azure.com/schemas/2015-01-01/deploymentTemplate.json#",
+    "contentVersion": "1.0.0.0",
+    "parameters": {
+      "applicationInsightsName": {
+        "type": "string",
+        "metadata": {
+          "description": "Name of the Application Insights resource"
+        }
+      },
+      "logicAppName": {
+        "type": "string",
+        "defaultValue": "performance-weekly-report",
+        "metadata": {
+          "description": "Name of the Logic App"
+        }
+      },
+      "recipientEmail": {
+        "type": "string",
+        "metadata": {
+          "description": "Email address for weekly reports"
+        }
+      },
+      "senderEmail": {
+        "type": "string",
+        "metadata": {
+          "description": "Sender email address"
+        }
+      }
+    },
+    "variables": {
+      "applicationInsightsResourceId": "[resourceId('Microsoft.Insights/components', parameters('applicationInsightsName'))]"
+    },
+    "resources": [
+      {
+        "type": "Microsoft.Logic/workflows",
+        "apiVersion": "2017-07-01",
+        "name": "[parameters('logicAppName')]",
+        "location": "[resourceGroup().location]",
+        "properties": {
+          "state": "Enabled",
+          "definition": {
+            "$schema": "https://schema.management.azure.com/providers/Microsoft.Logic/schemas/2016-06-01/workflowdefinition.json#",
+            "contentVersion": "1.0.0.0",
+            "parameters": {},
+            "triggers": {
+              "weekly_schedule": {
+                "recurrence": {
+                  "frequency": "Week",
+                  "interval": 1,
+                  "schedule": {
+                    "hours": [
+                      "9"
+                    ],
+                    "minutes": [
+                      0
+                    ],
+                    "weekDays": [
+                      "Monday"
+                    ]
+                  }
+                },
+                "type": "Recurrence"
+              }
+            },
+            "actions": {
+              "get_cold_start_metrics": {
+                "runAfter": {},
+                "type": "Http",
+                "inputs": {
+                  "method": "POST",
+                  "uri": "https://api.applicationinsights.io/v1/apps/[APP_ID]/query",
+                  "headers": {
+                    "X-API-Key": "[API_KEY]",
+                    "Content-Type": "application/json"
+                  },
+                  "body": {
+                    "query": "customEvents | where name == 'AppStart' | where timestamp > ago(7d) | extend startupDuration = toreal(customDimensions.startupDuration) | extend deviceTier = tostring(customDimensions.deviceTier) | where isnotempty(startupDuration) | summarize avg_duration = avg(startupDuration), p95_duration = percentile(startupDuration, 95), sessions = dcount(session_Id) by deviceTier | order by deviceTier"
+                  }
+                }
+              },
+              "get_navigation_metrics": {
+                "runAfter": {
+                  "get_cold_start_metrics": [
+                    "Succeeded"
+                  ]
+                },
+                "type": "Http",
+                "inputs": {
+                  "method": "POST",
+                  "uri": "https://api.applicationinsights.io/v1/apps/[APP_ID]/query",
+                  "headers": {
+                    "X-API-Key": "[API_KEY]",
+                    "Content-Type": "application/json"
+                  },
+                  "body": {
+                    "query": "customEvents | where name == 'UserInteraction' and customDimensions.action == 'navigation' | where timestamp > ago(7d) | extend duration = toreal(customDimensions.duration) | extend deviceTier = tostring(customDimensions.deviceTier) | where isnotempty(duration) | summarize avg_duration = avg(duration), p95_duration = percentile(duration, 95), navigations = count() by deviceTier | order by deviceTier"
+                  }
+                }
+              },
+              "get_memory_metrics": {
+                "runAfter": {
+                  "get_navigation_metrics": [
+                    "Succeeded"
+                  ]
+                },
+                "type": "Http",
+                "inputs": {
+                  "method": "POST",
+                  "uri": "https://api.applicationinsights.io/v1/apps/[APP_ID]/query",
+                  "headers": {
+                    "X-API-Key": "[API_KEY]",
+                    "Content-Type": "application/json"
+                  },
+                  "body": {
+                    "query": "customEvents | where name == 'Memory' | where timestamp > ago(7d) | extend usedMemory = toreal(customDimensions.usedMemory) | extend deviceTier = tostring(customDimensions.deviceTier) | where isnotempty(usedMemory) | summarize avg_memory = avg(usedMemory), peak_memory = max(usedMemory) by deviceTier | extend avg_memory_mb = avg_memory / 1024 / 1024 | extend peak_memory_mb = peak_memory / 1024 / 1024 | order by deviceTier"
+                  }
+                }
+              },
+              "get_budget_violations": {
+                "runAfter": {
+                  "get_memory_metrics": [
+                    "Succeeded"
+                  ]
+                },
+                "type": "Http",
+                "inputs": {
+                  "method": "POST",
+                  "uri": "https://api.applicationinsights.io/v1/apps/[APP_ID]/query",
+                  "headers": {
+                    "X-API-Key": "[API_KEY]",
+                    "Content-Type": "application/json"
+                  },
+                  "body": {
+                    "query": "customEvents | where name == 'budget_violation' | where timestamp > ago(7d) | extend metricType = tostring(customDimensions.metricType) | extend severity = tostring(customDimensions.severity) | summarize critical_violations = countif(severity == 'error'), warning_violations = countif(severity == 'warning') by metricType | order by critical_violations desc, warning_violations desc"
+                  }
+                }
+              },
+              "compose_email_body": {
+                "runAfter": {
+                  "get_budget_violations": [
+                    "Succeeded"
+                  ]
+                },
+                "type": "Compose",
+                "inputs": {
+                  "emailBody": "<!DOCTYPE html><html><head><style>body { font-family: Arial, sans-serif; margin: 20px; } .header { background-color: #0078d4; color: white; padding: 20px; border-radius: 5px; } .metric-section { margin: 20px 0; padding: 15px; border: 1px solid #ddd; border-radius: 5px; } .metric-title { font-size: 18px; font-weight: bold; color: #0078d4; margin-bottom: 10px; } .metric-table { width: 100%; border-collapse: collapse; } .metric-table th, .metric-table td { padding: 8px; text-align: left; border-bottom: 1px solid #ddd; } .metric-table th { background-color: #f2f2f2; } .status-good { color: #107c10; } .status-warning { color: #ff8c00; } .status-critical { color: #d13438; } .footer { margin-top: 30px; font-size: 12px; color: #666; }</style></head><body><div class='header'><h1>📱 Solarium CP App - Weekly Performance Report</h1><p>Week ending: @{formatDateTime(utcnow(), 'yyyy-MM-dd')}</p></div><div class='metric-section'><div class='metric-title'>🚀 Cold Start Performance</div><table class='metric-table'><tr><th>Device Tier</th><th>Avg Duration</th><th>P95 Duration</th><th>Sessions</th><th>Status</th></tr>@{body('get_cold_start_metrics')}</table></div><div class='metric-section'><div class='metric-title'>🧭 Navigation Performance</div><table class='metric-table'><tr><th>Device Tier</th><th>Avg Duration</th><th>P95 Duration</th><th>Navigations</th><th>Status</th></tr>@{body('get_navigation_metrics')}</table></div><div class='metric-section'><div class='metric-title'>🧠 Memory Usage</div><table class='metric-table'><tr><th>Device Tier</th><th>Avg Memory</th><th>Peak Memory</th><th>Status</th></tr>@{body('get_memory_metrics')}</table></div><div class='metric-section'><div class='metric-title'>⚠️ Budget Violations</div><table class='metric-table'><tr><th>Metric Type</th><th>Critical</th><th>Warnings</th><th>Status</th></tr>@{body('get_budget_violations')}</table></div><div class='footer'><p>This report is automatically generated every Monday at 9 AM.</p><p>For more detailed metrics, visit the <a href='https://portal.azure.com/#@[TENANT_ID]/dashboard/[DASHBOARD_ID]'>Performance Dashboard</a></p></div></body></html>"
+                }
+              },
+              "send_email": {
+                "runAfter": {
+                  "compose_email_body": [
+                    "Succeeded"
+                  ]
+                },
+                "type": "ApiConnection",
+                "inputs": {
+                  "host": {
+                    "connection": {
+                      "name": "@parameters('$connections')['office365']['connectionId']"
+                    }
+                  },
+                  "method": "post",
+                  "path": "/v2/Mail",
+                  "body": {
+                    "To": "[parameters('recipientEmail')]",
+                    "From": "[parameters('senderEmail')]",
+                    "Subject": "Weekly Performance Report - Solarium CP App (@{formatDateTime(utcnow(), 'yyyy-MM-dd')})",
+                    "Body": "@{outputs('compose_email_body')['emailBody']}",
+                    "IsHtml": true
+                  }
+                }
+              }
+            },
+            "outputs": {}
+          },
+          "parameters": {
+            "$connections": {
+              "value": {
+                "office365": {
+                  "connectionId": "[resourceId('Microsoft.Web/connections', 'office365')]",
+                  "connectionName": "office365",
+                  "id": "[concat('/subscriptions/', subscription().subscriptionId, '/providers/Microsoft.Web/locations/', resourceGroup().location, '/managedApis/office365')]"
+                }
+              }
+            }
+          }
+        }
+      }
+    ]
+  }

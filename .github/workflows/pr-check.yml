@@ -1,0 +1,79 @@
+name: Pull Request Checks
+
+on:
+  pull_request:
+    branches: [ main, staging, production ]
+    types: [opened, synchronize, reopened]
+
+env:
+  NODE_VERSION: '18'
+
+jobs:
+  pr-validation:
+    name: 🔍 PR Validation
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: 'yarn'
+
+      - name: Install dependencies
+        run: yarn install --frozen-lockfile
+
+      - name: Validate environment files
+        run: |
+          echo "🔍 Validating environment files..."
+          for env_file in .env.development .env.staging .env.production; do
+            if [[ -f "$env_file" ]]; then
+              echo "✅ Found: $env_file"
+              # Check for secrets (should not contain actual secrets)
+              if grep -i "password\|secret\|key" "$env_file" | grep -v "PLACEHOLDER\|placeholder"; then
+                echo "⚠️  Warning: Potential secrets found in $env_file"
+                echo "Ensure no real secrets are committed!"
+              fi
+            else
+              echo "❌ Missing: $env_file"
+              exit 1
+            fi
+          done
+
+      - name: Run linting
+        run: yarn lint
+
+      - name: Run type checking
+        run: yarn type-check
+
+      - name: Run tests
+        run: yarn test:ci
+
+            - name: Validate documentation
+        run: |
+          echo "📚 Validating documentation..."
+          yarn docs:check
+          ./scripts/validate-docs.sh
+
+      - name: Check documentation links
+        run: |
+          echo "🔗 Checking documentation links..."
+          # Additional link checking could go here
+
+      - name: Check for TODO/FIXME comments
+        run: |
+          echo "🔍 Checking for TODO/FIXME comments..."
+          if grep -r "TODO\|FIXME" src/ --include="*.ts" --include="*.tsx"; then
+            echo "⚠️  Found TODO/FIXME comments - consider addressing before merge"
+          else
+            echo "✅ No TODO/FIXME comments found"
+          fi
+
+      - name: Comment coverage on PR
+        uses: romeovs/lcov-reporter-action@v0.3.1
+        with:
+          lcov-file: ./coverage/lcov.info
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          delete-old-comments: true

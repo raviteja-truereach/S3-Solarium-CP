@@ -1,0 +1,21 @@
+[
+    'e2e/loginSuccess.e2e.ts',
+    'e2e/otpLockout.e2e.ts',
+    'e2e/setup.ts',
+    'e2e/jest.config.js',
+    'src/screens/auth/LoginScreen.tsx',
+    'src/screens/auth/OtpScreen.tsx',
+    'src/screens/customers/CustomersScreen.tsx',
+    'src/screens/customers/CustomerDetailScreen.tsx',
+    'src/store/api/authApi.ts',
+    '__tests__/mocks/mockServer.ts',
+    'src/store/api/commissionApi.ts',
+    'src/store/slices/commissionSlice.ts',
+    'src/navigation/MainTabNavigator.tsx',
+    '.detoxrc.js',
+    'package.json',
+    'src/navigation/NavigationProvider.tsx',
+    'src/navigation/types.ts',
+    'src/database/dao/CommissionDao.ts',
+    '__tests__/mocks/fetchMock.ts'
+]

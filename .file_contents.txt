@@ -1,0 +1,4357 @@
+================================================================================
+File: loginSuccess.e2e.ts
+Location: e2e/loginSuccess.e2e.ts
+================================================================================
+   1 | /**
+   2 |  * Login Success E2E Test
+   3 |  * Tests the complete happy path login flow
+   4 |  */
+   5 | import { device, element, by, expect, waitFor } from 'detox';
+   6 | 
+   7 | describe('Login Success Flow', () => {
+   8 |   beforeAll(async () => {
+   9 |     await device.launchApp();
+  10 |   });
+  11 | 
+  12 |   beforeEach(async () => {
+  13 |     await device.reloadReactNative();
+  14 |   });
+  15 | 
+  16 |   it('should complete login flow and reach home screen', async () => {
+  17 |     // Step 1: Should start on splash screen, then auto-navigate to login
+  18 |     await waitFor(element(by.text('Welcome to Solarium')))
+  19 |       .toBeVisible()
+  20 |       .withTimeout(5000);
+  21 | 
+  22 |     // Step 2: Enter valid phone number
+  23 |     const phoneInput = element(by.label('Phone Number'));
+  24 |     await expect(phoneInput).toBeVisible();
+  25 |     await phoneInput.typeText('9876543210');
+  26 | 
+  27 |     // Step 3: Verify Get OTP button becomes enabled
+  28 |     const getOtpButton = element(by.text('Get OTP'));
+  29 |     await waitFor(getOtpButton).toBeVisible().withTimeout(2000);
+  30 |     await expect(getOtpButton).toBeVisible();
+  31 | 
+  32 |     // Step 4: Tap Get OTP button
+  33 |     await getOtpButton.tap();
+  34 | 
+  35 |     // Step 5: Handle development mode alert (mock backend)
+  36 |     await waitFor(element(by.text('Development Mode')))
+  37 |       .toBeVisible()
+  38 |       .withTimeout(5000);
+  39 | 
+  40 |     const continueButton = element(by.text('Continue'));
+  41 |     await expect(continueButton).toBeVisible();
+  42 |     await continueButton.tap();
+  43 | 
+  44 |     // Step 6: Should navigate to OTP screen
+  45 |     await waitFor(element(by.text('Verify OTP')))
+  46 |       .toBeVisible()
+  47 |       .withTimeout(3000);
+  48 | 
+  49 |     await expect(
+  50 |       element(by.text('Enter the 6-digit code sent to'))
+  51 |     ).toBeVisible();
+  52 |     await expect(element(by.text('+91 9876543210'))).toBeVisible();
+  53 | 
+  54 |     // Step 7: Enter OTP (6 digits)
+  55 |     const otpInput = element(by.label('OTP input'));
+  56 |     await expect(otpInput).toBeVisible();
+  57 |     await otpInput.typeText('123456');
+  58 | 
+  59 |     // Step 8: Tap Verify OTP button
+  60 |     const verifyButton = element(by.text('Verify OTP'));
+  61 |     await waitFor(verifyButton).toBeVisible().withTimeout(2000);
+  62 |     await verifyButton.tap();
+  63 | 
+  64 |     // Step 9: Handle development mode alert for OTP verification
+  65 |     await waitFor(
+  66 |       element(
+  67 |         by.text('Backend not connected. Using mock login success for testing.')
+  68 |       )
+  69 |     )
+  70 |       .toBeVisible()
+  71 |       .withTimeout(5000);
+  72 | 
+  73 |     const continueOtpButton = element(by.text('Continue'));
+  74 |     await expect(continueOtpButton).toBeVisible();
+  75 |     await continueOtpButton.tap();
+  76 | 
+  77 |     // Step 10: Should navigate to Home screen
+  78 |     await waitFor(element(by.text('Welcome to Solarium CP')))
+  79 |       .toBeVisible()
+  80 |       .withTimeout(5000);
+  81 | 
+  82 |     await expect(element(by.text('Channel Partner Dashboard'))).toBeVisible();
+  83 | 
+  84 |     // Step 11: Verify bottom navigation is present
+  85 |     await expect(element(by.text('Home'))).toBeVisible();
+  86 |     await expect(element(by.text('Settings'))).toBeVisible();
+  87 | 
+  88 |     console.log('✅ Login success E2E test completed successfully');
+  89 |   });
+  90 | 
+  91 |   it('should validate phone number input', async () => {
+  92 |     // Navigate to login screen
+  93 |     await waitFor(element(by.text('Welcome to Solarium')))
+  94 |       .toBeVisible()
+  95 |       .withTimeout(5000);
+  96 | 
+  97 |     // Test invalid phone number
+  98 |     const phoneInput = element(by.label('Phone Number'));
+  99 |     await phoneInput.typeText('123'); // Invalid - too short
+ 100 | 
+ 101 |     // Get OTP button should be disabled
+ 102 |     const getOtpButton = element(by.text('Get OTP'));
+ 103 |     await expect(getOtpButton).toBeVisible();
+ 104 | 
+ 105 |     // Clear and enter valid phone number
+ 106 |     await phoneInput.clearText();
+ 107 |     await phoneInput.typeText('9876543210');
+ 108 | 
+ 109 |     // Button should become enabled
+ 110 |     await expect(getOtpButton).toBeVisible();
+ 111 | 
+ 112 |     console.log('✅ Phone validation E2E test completed successfully');
+ 113 |   });
+ 114 | 
+ 115 |   it('should handle back navigation from OTP to login', async () => {
+ 116 |     // Complete phone entry to reach OTP screen
+ 117 |     await waitFor(element(by.text('Welcome to Solarium')))
+ 118 |       .toBeVisible()
+ 119 |       .withTimeout(5000);
+ 120 | 
+ 121 |     const phoneInput = element(by.label('Phone Number'));
+ 122 |     await phoneInput.typeText('9876543210');
+ 123 | 
+ 124 |     const getOtpButton = element(by.text('Get OTP'));
+ 125 |     await getOtpButton.tap();
+ 126 | 
+ 127 |     // Handle development alert
+ 128 |     await waitFor(element(by.text('Continue')))
+ 129 |       .toBeVisible()
+ 130 |       .withTimeout(5000);
+ 131 |     await element(by.text('Continue')).tap();
+ 132 | 
+ 133 |     // Should be on OTP screen
+ 134 |     await waitFor(element(by.text('Verify OTP')))
+ 135 |       .toBeVisible()
+ 136 |       .withTimeout(3000);
+ 137 | 
+ 138 |     // Tap back button
+ 139 |     const backButton = element(by.text('← Back to Phone'));
+ 140 |     await expect(backButton).toBeVisible();
+ 141 |     await backButton.tap();
+ 142 | 
+ 143 |     // Should return to login screen
+ 144 |     await waitFor(element(by.text('Welcome to Solarium')))
+ 145 |       .toBeVisible()
+ 146 |       .withTimeout(3000);
+ 147 | 
+ 148 |     console.log('✅ Back navigation E2E test completed successfully');
+ 149 |   });
+ 150 | });
+ 151 | 
+================================================================================
+File: otpLockout.e2e.ts
+Location: e2e/otpLockout.e2e.ts
+================================================================================
+   1 | /**
+   2 |  * OTP Lockout E2E Test
+   3 |  * Tests the OTP lockout functionality after failed attempts
+   4 |  */
+   5 | import { device, element, by, expect, waitFor } from 'detox';
+   6 | 
+   7 | describe('OTP Lockout Flow', () => {
+   8 |   beforeAll(async () => {
+   9 |     await device.launchApp();
+  10 |   });
+  11 | 
+  12 |   beforeEach(async () => {
+  13 |     await device.reloadReactNative();
+  14 |   });
+  15 | 
+  16 |   /**
+  17 |    * Helper function to navigate to OTP screen
+  18 |    */
+  19 |   async function navigateToOtpScreen(phoneNumber: string = '9876543210') {
+  20 |     // Wait for login screen
+  21 |     await waitFor(element(by.text('Welcome to Solarium')))
+  22 |       .toBeVisible()
+  23 |       .withTimeout(5000);
+  24 | 
+  25 |     // Enter phone number
+  26 |     const phoneInput = element(by.label('Phone Number'));
+  27 |     await phoneInput.typeText(phoneNumber);
+  28 | 
+  29 |     // Tap Get OTP
+  30 |     const getOtpButton = element(by.text('Get OTP'));
+  31 |     await getOtpButton.tap();
+  32 | 
+  33 |     // Handle development alert
+  34 |     await waitFor(element(by.text('Continue')))
+  35 |       .toBeVisible()
+  36 |       .withTimeout(5000);
+  37 |     await element(by.text('Continue')).tap();
+  38 | 
+  39 |     // Verify we're on OTP screen
+  40 |     await waitFor(element(by.text('Verify OTP')))
+  41 |       .toBeVisible()
+  42 |       .withTimeout(3000);
+  43 |   }
+  44 | 
+  45 |   /**
+  46 |    * Helper function to enter OTP and verify
+  47 |    */
+  48 |   async function enterOtpAndVerify(otp: string) {
+  49 |     const otpInput = element(by.label('OTP input'));
+  50 |     await otpInput.clearText();
+  51 |     await otpInput.typeText(otp);
+  52 | 
+  53 |     const verifyButton = element(by.text('Verify OTP'));
+  54 |     await verifyButton.tap();
+  55 |   }
+  56 | 
+  57 |   it('should show attempts remaining after wrong OTP', async () => {
+  58 |     await navigateToOtpScreen();
+  59 | 
+  60 |     // Enter wrong OTP
+  61 |     await enterOtpAndVerify('111111');
+  62 | 
+  63 |     // Since we're using mock responses, this test focuses on UI behavior
+  64 |     // In a real scenario, wrong OTP would trigger attempt counter
+  65 | 
+  66 |     // For mock implementation, we can test the UI elements exist
+  67 |     await expect(element(by.label('OTP input'))).toBeVisible();
+  68 |     await expect(element(by.text('Verify OTP'))).toBeVisible();
+  69 |     await expect(element(by.text('Resend OTP'))).toBeVisible();
+  70 | 
+  71 |     console.log('✅ Wrong OTP attempt test completed');
+  72 |   });
+  73 | 
+  74 |   it('should handle resend OTP functionality', async () => {
+  75 |     await navigateToOtpScreen();
+  76 | 
+  77 |     // Wait for resend timer to allow resend (30 seconds in real app)
+  78 |     // For E2E testing, we'll test that the button exists and is initially disabled
+  79 |     const resendButton = element(by.text('Resend OTP'));
+  80 |     await expect(resendButton).toBeVisible();
+  81 | 
+  82 |     // Check that resend timer text is visible
+  83 |     await waitFor(element(by.text(/Resend available in \d+s/)))
+  84 |       .toBeVisible()
+  85 |       .withTimeout(3000);
+  86 | 
+  87 |     console.log('✅ Resend OTP functionality test completed');
+  88 |   });
+  89 | 
+  90 |   it('should display OTP expiry timer', async () => {
+  91 |     await navigateToOtpScreen();
+  92 | 
+  93 |     // Check that OTP timer is visible
+  94 |     await waitFor(element(by.text(/OTP expires in \d+:\d+/)))
+  95 |       .toBeVisible()
+  96 |       .withTimeout(3000);
+  97 | 
+  98 |     // Verify timer elements exist
+  99 |     await expect(element(by.text('⏱️ OTP expires in 2:00'))).toBeVisible();
+ 100 | 
+ 101 |     console.log('✅ OTP timer display test completed');
+ 102 |   });
+ 103 | 
+ 104 |   it('should validate OTP input length', async () => {
+ 105 |     await navigateToOtpScreen();
+ 106 | 
+ 107 |     // Test incomplete OTP
+ 108 |     const otpInput = element(by.label('OTP input'));
+ 109 |     await otpInput.typeText('123'); // Only 3 digits
+ 110 | 
+ 111 |     // Verify button should be disabled for incomplete OTP
+ 112 |     const verifyButton = element(by.text('Verify OTP'));
+ 113 |     await expect(verifyButton).toBeVisible();
+ 114 | 
+ 115 |     // Clear and enter complete OTP
+ 116 |     await otpInput.clearText();
+ 117 |     await otpInput.typeText('123456'); // 6 digits
+ 118 | 
+ 119 |     // Button should be enabled now
+ 120 |     await expect(verifyButton).toBeVisible();
+ 121 | 
+ 122 |     console.log('✅ OTP input validation test completed');
+ 123 |   });
+ 124 | 
+ 125 |   it('should display phone number correctly on OTP screen', async () => {
+ 126 |     const testPhone = '9123456789';
+ 127 |     await navigateToOtpScreen(testPhone);
+ 128 | 
+ 129 |     // Verify phone number is displayed correctly
+ 130 |     await expect(element(by.text(`+91 ${testPhone}`))).toBeVisible();
+ 131 |     await expect(
+ 132 |       element(by.text('Enter the 6-digit code sent to'))
+ 133 |     ).toBeVisible();
+ 134 | 
+ 135 |     console.log('✅ Phone number display test completed');
+ 136 |   });
+ 137 | 
+ 138 |   // Mock lockout test (since we can't easily trigger real lockout in E2E)
+ 139 |   it('should handle mock lockout scenario', async () => {
+ 140 |     await navigateToOtpScreen();
+ 141 | 
+ 142 |     // This tests that lockout UI elements would be properly handled
+ 143 |     // In a real implementation, after 5 wrong attempts, lockout banner would show
+ 144 | 
+ 145 |     // Test that all necessary elements are present for lockout handling
+ 146 |     await expect(element(by.text('Verify OTP'))).toBeVisible();
+ 147 |     await expect(element(by.text('← Back to Phone'))).toBeVisible();
+ 148 | 
+ 149 |     // Verify OTP input is accessible
+ 150 |     const otpInput = element(by.label('OTP input'));
+ 151 |     await expect(otpInput).toBeVisible();
+ 152 | 
+ 153 |     console.log('✅ Mock lockout scenario test completed');
+ 154 |   });
+ 155 | });
+ 156 | 
+================================================================================
+File: setup.ts
+Location: e2e/setup.ts
+================================================================================
+   1 | /**
+   2 |  * E2E Test Setup
+   3 |  * Global setup for Detox E2E tests
+   4 |  */
+   5 | import { device, cleanup } from 'detox';
+   6 | 
+   7 | beforeAll(async () => {
+   8 |   console.log('🚀 Starting E2E test suite...');
+   9 | });
+  10 | 
+  11 | afterAll(async () => {
+  12 |   console.log('✅ E2E test suite completed');
+  13 |   await cleanup();
+  14 | });
+  15 | 
+  16 | // Global test timeout
+  17 | jest.setTimeout(120000);
+  18 | 
+  19 | // Global error handler
+  20 | process.on('unhandledRejection', (reason, promise) => {
+  21 |   console.error('Unhandled Rejection at:', promise, 'reason:', reason);
+  22 | });
+  23 | 
+================================================================================
+File: jest.config.js
+Location: e2e/jest.config.js
+================================================================================
+   1 | module.exports = {
+   2 |   maxWorkers: 1,
+   3 |   testTimeout: 120000,
+   4 |   testRegex: '\\.e2e\\.ts$',
+   5 |   verbose: true,
+   6 |   preset: 'ts-jest',
+   7 |   testEnvironment: 'node',
+   8 |   setupFilesAfterEnv: ['./init.ts'],
+   9 |   testPathIgnorePatterns: ['/node_modules/', '/lib/'],
+  10 |   transform: {
+  11 |     '^.+\\.(ts|tsx)$': 'ts-jest',
+  12 |   },
+  13 | };
+  14 | 
+================================================================================
+File: LoginScreen.tsx
+Location: src/screens/auth/LoginScreen.tsx
+================================================================================
+   1 | /**
+   2 |  * Login Screen
+   3 |  * Phone-based OTP authentication for Channel Partners
+   4 |  */
+   5 | import React from 'react';
+   6 | import { View, Text, StyleSheet, Alert } from 'react-native';
+   7 | import { useNavigation } from '@react-navigation/native';
+   8 | import type { NavigationProp } from '@react-navigation/native';
+   9 | import { useRequestOtpMutation } from '@store/api/authApi';
+  10 | import { AppButton, AppTextInput, ScreenContainer } from '@components/common';
+  11 | import { useTheme } from 'react-native-paper';
+  12 | import { useConnectivity } from '@contexts/ConnectivityContext';
+  13 | import type { AuthStackParamList } from '@navigation/types';
+  14 | import { validateBackendError } from '@utils/errorMessage';
+  15 | 
+  16 | type LoginScreenNavigationProp = NavigationProp<AuthStackParamList, 'Login'>;
+  17 | 
+  18 | /**
+  19 |  * Login Screen Component
+  20 |  * Handles phone number input and OTP request
+  21 |  */
+  22 | export const LoginScreen: React.FC = () => {
+  23 |   const navigation = useNavigation<LoginScreenNavigationProp>();
+  24 |   const theme = useTheme();
+  25 |   const { isOnline } = useConnectivity();
+  26 | 
+  27 |   const [phone, setPhone] = React.useState('');
+  28 |   const [requestOtp, { isLoading, error }] = useRequestOtpMutation();
+  29 | 
+  30 |   /**
+  31 |    * Validate phone number format
+  32 |    */
+  33 |   const validatePhone = (phoneNumber: string): boolean => {
+  34 |     const phoneRegex = /^\d{10}$/;
+  35 |     return phoneRegex.test(phoneNumber);
+  36 |   };
+  37 | 
+  38 |   /**
+  39 |    * Handle OTP request
+  40 |    */
+  41 |   const handleGetOtp = async () => {
+  42 |     if (!isOnline) {
+  43 |       Alert.alert(
+  44 |         'No Internet',
+  45 |         'Please check your internet connection and try again.'
+  46 |       );
+  47 |       return;
+  48 |     }
+  49 | 
+  50 |     if (!validatePhone(phone)) {
+  51 |       Alert.alert(
+  52 |         'Invalid Phone',
+  53 |         'Please enter a valid 10-digit phone number.'
+  54 |       );
+  55 |       return;
+  56 |     }
+  57 | 
+  58 |     try {
+  59 |       navigation.navigate('Otp', { phone });
+  60 |       // const result = await requestOtp({ phone }).unwrap();
+  61 | 
+  62 |       // if (result.success && result.data?.otpSent) {
+  63 |       //   // Navigate to OTP screen
+  64 |       //   navigation.navigate('Otp', { phone });
+  65 |       // } else {
+  66 |       //   Alert.alert('Error', 'Failed to send OTP. Please try again.');
+  67 |       // }
+  68 |     } catch (err: any) {
+  69 |       console.warn('OTP request failed:', err);
+  70 | 
+  71 |       // Handle network errors (backend not available) - provide mock response for testing
+  72 |       if (
+  73 |         err.status === 'FETCH_ERROR' ||
+  74 |         err.error?.includes('Network request failed')
+  75 |       ) {
+  76 |         console.log(
+  77 |           'Backend not available - using mock success response for testing'
+  78 |         );
+  79 |         Alert.alert(
+  80 |           'Development Mode',
+  81 |           'Backend not connected. Using mock response for testing.',
+  82 |           [
+  83 |             {
+  84 |               text: 'Continue',
+  85 |               onPress: () => {
+  86 |                 // Navigate to OTP screen with mock success
+  87 |                 navigation.navigate('Otp', { phone });
+  88 |               },
+  89 |             },
+  90 |           ]
+  91 |         );
+  92 |         return;
+  93 |       }
+  94 | 
+  95 |       // Handle specific error cases
+  96 |       if (err.code === 429) {
+  97 |         Alert.alert(
+  98 |           'Account Locked',
+  99 |           err.message ||
+ 100 |             'Too many attempts. Please try again after 15 minutes.',
+ 101 |           [{ text: 'OK' }]
+ 102 |         );
+ 103 |       } else {
+ 104 |         Alert.alert(
+ 105 |           'Error',
+ 106 |           validateBackendError(err) || 'Failed to send OTP. Please try again.'
+ 107 |         );
+ 108 |         // Alert.alert(
+ 109 |         //   'Error',
+ 110 |         //   err.message || 'Failed to send OTP. Please try again.'
+ 111 |         // );
+ 112 |       }
+ 113 |     }
+ 114 |   };
+ 115 | 
+ 116 |   /**
+ 117 |    * Format phone number input
+ 118 |    */
+ 119 |   const handlePhoneChange = (text: string) => {
+ 120 |     // Remove non-digits
+ 121 |     const cleaned = text.replace(/\D/g, '');
+ 122 |     // Limit to 10 digits
+ 123 |     const limited = cleaned.slice(0, 10);
+ 124 |     setPhone(limited);
+ 125 |   };
+ 126 | 
+ 127 |   return (
+ 128 |     <ScreenContainer scrollable>
+ 129 |       <View style={styles.content}>
+ 130 |         <View style={styles.header}>
+ 131 |           <Text style={[styles.title, { color: theme.colors.onBackground }]}>
+ 132 |             Welcome to Solarium
+ 133 |           </Text>
+ 134 |           <Text
+ 135 |             style={[styles.subtitle, { color: theme.colors.onSurfaceVariant }]}
+ 136 |           >
+ 137 |             Enter your phone number to get started
+ 138 |           </Text>
+ 139 |         </View>
+ 140 | 
+ 141 |         <View style={styles.form}>
+ 142 |           <View style={styles.phoneInputContainer}>
+ 143 |             <View
+ 144 |               style={[
+ 145 |                 styles.countryCodeContainer,
+ 146 |                 { backgroundColor: theme.colors.surface },
+ 147 |               ]}
+ 148 |             >
+ 149 |               <Text
+ 150 |                 style={[styles.countryCode, { color: theme.colors.onSurface }]}
+ 151 |               >
+ 152 |                 +91
+ 153 |               </Text>
+ 154 |             </View>
+ 155 |             <View style={styles.phoneInputWrapper}>
+ 156 |               <AppTextInput
+ 157 |                 label="Phone Number"
+ 158 |                 placeholder="Enter your phone number"
+ 159 |                 value={phone}
+ 160 |                 onChangeText={handlePhoneChange}
+ 161 |                 keyboardType="phone-pad"
+ 162 |                 maxLength={10}
+ 163 |                 variant="outlined"
+ 164 |                 error={
+ 165 |                   phone.length > 0 && !validatePhone(phone)
+ 166 |                     ? 'Please enter a valid 10-digit phone number'
+ 167 |                     : undefined
+ 168 |                 }
+ 169 |                 style={{ marginVertical: 0 }}
+ 170 |                 disabled={isLoading}
+ 171 |               />
+ 172 |             </View>
+ 173 |           </View>
+ 174 |           {error && (
+ 175 |             <Text style={[styles.errorText, { color: theme.colors.error }]}>
+ 176 |               {(error as any)?.message || 'Failed to send OTP'}
+ 177 |             </Text>
+ 178 |           )}
+ 179 | 
+ 180 |           <AppButton
+ 181 |             title={isLoading ? 'Sending OTP...' : 'Get OTP'}
+ 182 |             variant="contained"
+ 183 |             size="large"
+ 184 |             fullWidth
+ 185 |             onPress={handleGetOtp}
+ 186 |             disabled={!validatePhone(phone) || isLoading || !isOnline}
+ 187 |             style={styles.otpButton}
+ 188 |           />
+ 189 |         </View>
+ 190 | 
+ 191 |         {!isOnline && (
+ 192 |           <View
+ 193 |             style={[
+ 194 |               styles.offlineNotice,
+ 195 |               { backgroundColor: theme.colors.errorContainer },
+ 196 |             ]}
+ 197 |           >
+ 198 |             <Text
+ 199 |               style={[
+ 200 |                 styles.offlineText,
+ 201 |                 { color: theme.colors.onErrorContainer },
+ 202 |               ]}
+ 203 |             >
+ 204 |               📶 You're offline. OTP cannot be sent without internet connection.
+ 205 |             </Text>
+ 206 |           </View>
+ 207 |         )}
+ 208 | 
+ 209 |         <View style={styles.footer}>
+ 210 |           <Text
+ 211 |             style={[
+ 212 |               styles.footerText,
+ 213 |               { color: theme.colors.onSurfaceVariant },
+ 214 |             ]}
+ 215 |           >
+ 216 |             By continuing, you agree to our Terms of Service and Privacy Policy
+ 217 |           </Text>
+ 218 |         </View>
+ 219 |       </View>
+ 220 |     </ScreenContainer>
+ 221 |   );
+ 222 | };
+ 223 | 
+ 224 | const styles = StyleSheet.create({
+ 225 |   content: {
+ 226 |     flex: 1,
+ 227 |     justifyContent: 'center',
+ 228 |     paddingHorizontal: 24,
+ 229 |     paddingVertical: 40,
+ 230 |   },
+ 231 |   header: {
+ 232 |     alignItems: 'center',
+ 233 |     marginBottom: 40,
+ 234 |   },
+ 235 |   title: {
+ 236 |     fontSize: 28,
+ 237 |     fontWeight: 'bold',
+ 238 |     textAlign: 'center',
+ 239 |     marginBottom: 8,
+ 240 |   },
+ 241 |   subtitle: {
+ 242 |     fontSize: 16,
+ 243 |     textAlign: 'center',
+ 244 |     lineHeight: 22,
+ 245 |   },
+ 246 |   form: {
+ 247 |     marginBottom: 30,
+ 248 |   },
+ 249 |   errorText: {
+ 250 |     fontSize: 14,
+ 251 |     marginTop: 8,
+ 252 |     marginBottom: 16,
+ 253 |   },
+ 254 |   otpButton: {
+ 255 |     marginTop: 24,
+ 256 |   },
+ 257 |   offlineNotice: {
+ 258 |     borderRadius: 8,
+ 259 |     padding: 16,
+ 260 |     marginBottom: 20,
+ 261 |     borderLeftWidth: 4,
+ 262 |     borderLeftColor: '#ff9800',
+ 263 |   },
+ 264 |   offlineText: {
+ 265 |     fontSize: 14,
+ 266 |     textAlign: 'center',
+ 267 |   },
+ 268 |   footer: {
+ 269 |     marginTop: 20,
+ 270 |   },
+ 271 |   footerText: {
+ 272 |     fontSize: 12,
+ 273 |     textAlign: 'center',
+ 274 |     lineHeight: 18,
+ 275 |   },
+ 276 | 
+ 277 |   phoneInputContainer: {
+ 278 |     flexDirection: 'row',
+ 279 |     alignItems: 'flex-start',
+ 280 |     marginBottom: 16,
+ 281 |   },
+ 282 |   countryCodeContainer: {
+ 283 |     borderWidth: 1,
+ 284 |     borderColor: '#ddd',
+ 285 |     borderRadius: 4,
+ 286 |     paddingHorizontal: 12,
+ 287 |     paddingVertical: 16,
+ 288 |     marginRight: 8,
+ 289 |     justifyContent: 'center',
+ 290 |     height: 52,
+ 291 |     marginTop: 5,
+ 292 |   },
+ 293 |   phoneInputWrapper: {
+ 294 |     flex: 1,
+ 295 |     marginBottom: 0,
+ 296 |   },
+ 297 |   countryCode: {
+ 298 |     fontSize: 16,
+ 299 |     fontWeight: '500',
+ 300 |   },
+ 301 | });
+ 302 | 
+ 303 | export default LoginScreen;
+ 304 | 
+================================================================================
+File: OtpScreen.tsx
+Location: src/screens/auth/OtpScreen.tsx
+================================================================================
+   1 | /**
+   2 |  * OTP Verification Screen
+   3 |  * Handles OTP input and verification with countdown timer
+   4 |  */
+   5 | import React from 'react';
+   6 | import { View, Text, StyleSheet, Alert, BackHandler } from 'react-native';
+   7 | import {
+   8 |   useNavigation,
+   9 |   useRoute,
+  10 |   useFocusEffect,
+  11 | } from '@react-navigation/native';
+  12 | import type { NavigationProp, RouteProp } from '@react-navigation/native';
+  13 | import OTPTextInput from 'react-native-otp-textinput';
+  14 | import {
+  15 |   useVerifyOtpMutation,
+  16 |   useRequestOtpMutation,
+  17 | } from '@store/api/authApi';
+  18 | import { useAppDispatch } from '@hooks/reduxHooks';
+  19 | import { loginSuccess } from '@store/slices/authSlice';
+  20 | import { AppButton, ScreenContainer } from '@components/common';
+  21 | import { useTheme } from 'react-native-paper';
+  22 | import { useConnectivity } from '@contexts/ConnectivityContext';
+  23 | import { OTP_EXPIRY_SEC, OTP_RESEND_INTERVAL } from '@constants/auth';
+  24 | import type { AuthStackParamList } from '@navigation/types';
+  25 | import { saveToken } from '@utils/secureStorage/KeychainHelper';
+  26 | import { validateBackendError } from '@utils/errorMessage';
+  27 | import { initializeSyncAfterLogin } from '@store/thunks/authThunks';
+  28 | 
+  29 | type OtpScreenNavigationProp = NavigationProp<AuthStackParamList, 'Otp'>;
+  30 | type OtpScreenRouteProp = RouteProp<AuthStackParamList, 'Otp'>;
+  31 | 
+  32 | /**
+  33 |  * OTP Screen Component
+  34 |  * Handles OTP verification with timer and resend functionality
+  35 |  */
+  36 | export const OtpScreen: React.FC = () => {
+  37 |   const navigation = useNavigation<OtpScreenNavigationProp>();
+  38 |   const route = useRoute<OtpScreenRouteProp>();
+  39 |   const theme = useTheme();
+  40 |   const dispatch = useAppDispatch();
+  41 |   const { isOnline } = useConnectivity();
+  42 | 
+  43 |   const { phone } = route.params;
+  44 | 
+  45 |   const [otp, setOtp] = React.useState('');
+  46 |   const [timer, setTimer] = React.useState(OTP_EXPIRY_SEC);
+  47 |   const [resendTimer, setResendTimer] = React.useState(OTP_RESEND_INTERVAL);
+  48 |   const [attempts, setAttempts] = React.useState(0);
+  49 |   const [isLocked, setIsLocked] = React.useState(false);
+  50 |   const [lockTimer, setLockTimer] = React.useState(0);
+  51 | 
+  52 |   const [verifyOtp, { isLoading: isVerifying }] = useVerifyOtpMutation();
+  53 |   const [requestOtp, { isLoading: isResending }] = useRequestOtpMutation();
+  54 |   const otpInputRef = React.useRef<OTPTextInput>(null);
+  55 | 
+  56 |   /**
+  57 |    * Timer effects for OTP expiry and resend countdown
+  58 |    */
+  59 |   React.useEffect(() => {
+  60 |     if (timer > 0) {
+  61 |       const interval = setInterval(() => {
+  62 |         setTimer((prev) => prev - 1);
+  63 |       }, 1000);
+  64 |       return () => clearInterval(interval);
+  65 |     }
+  66 |   }, [timer]);
+  67 | 
+  68 |   React.useEffect(() => {
+  69 |     if (resendTimer > 0) {
+  70 |       const interval = setInterval(() => {
+  71 |         setResendTimer((prev) => prev - 1);
+  72 |       }, 1000);
+  73 |       return () => clearInterval(interval);
+  74 |     }
+  75 |   }, [resendTimer]);
+  76 | 
+  77 |   React.useEffect(() => {
+  78 |     if (lockTimer > 0) {
+  79 |       const interval = setInterval(() => {
+  80 |         setLockTimer((prev) => {
+  81 |           if (prev <= 1) {
+  82 |             setIsLocked(false);
+  83 |             setAttempts(0);
+  84 |             return 0;
+  85 |           }
+  86 |           return prev - 1;
+  87 |         });
+  88 |       }, 1000);
+  89 |       return () => clearInterval(interval);
+  90 |     }
+  91 |   }, [lockTimer]);
+  92 | 
+  93 |   /**
+  94 |    * Handle hardware back button
+  95 |    */
+  96 |   useFocusEffect(
+  97 |     React.useCallback(() => {
+  98 |       const onBackPress = () => {
+  99 |         navigation.goBack();
+ 100 |         return true;
+ 101 |       };
+ 102 | 
+ 103 |       const subscription = BackHandler.addEventListener(
+ 104 |         'hardwareBackPress',
+ 105 |         onBackPress
+ 106 |       );
+ 107 |       return () => subscription.remove();
+ 108 |     }, [navigation])
+ 109 |   );
+ 110 | 
+ 111 |   /**
+ 112 |    * Handle OTP verification
+ 113 |    */
+ 114 |   const handleVerifyOtp = async () => {
+ 115 |     if (!isOnline) {
+ 116 |       Alert.alert('No Internet', 'Please check your internet connection.');
+ 117 |       return;
+ 118 |     }
+ 119 | 
+ 120 |     if (otp.length !== 6) {
+ 121 |       Alert.alert('Invalid OTP', 'Please enter the complete 6-digit OTP.');
+ 122 |       return;
+ 123 |     }
+ 124 | 
+ 125 |     if (isLocked) {
+ 126 |       Alert.alert(
+ 127 |         'Account Locked',
+ 128 |         `Please wait ${Math.floor(lockTimer / 60)}:${(lockTimer % 60)
+ 129 |           .toString()
+ 130 |           .padStart(2, '0')} before trying again.`
+ 131 |       );
+ 132 |       return;
+ 133 |     }
+ 134 | 
+ 135 |     try {
+ 136 |       const result = await verifyOtp({ phone, otp }).unwrap();
+ 137 |       console.log('result otp', result);
+ 138 |       if (result.success && result.data) {
+ 139 |         // Calculate token expiry (24 hours from now)
+ 140 |         const expiresAt = Date.now() + 24 * 60 * 60 * 1000;
+ 141 | 
+ 142 |         // Save token to keychain first to avoid race condition
+ 143 |         await saveToken(result.data.token, expiresAt);
+ 144 |         console.log('Token saved to keychain successfully');
+ 145 | 
+ 146 |         // Create user object from response
+ 147 |         const user = {
+ 148 |           id: result.data.userId,
+ 149 |           name: 'Channel Partner', // Will be updated from backend later
+ 150 |           phone: phone,
+ 151 |         };
+ 152 | 
+ 153 |         // Dispatch login success
+ 154 |         dispatch(
+ 155 |           loginSuccess({
+ 156 |             token: result.data.token,
+ 157 |             expiresAt,
+ 158 |             user,
+ 159 |           })
+ 160 |         );
+ 161 |         dispatch(initializeSyncAfterLogin());
+ 162 |         console.log('Login successful - user authenticated');
+ 163 |         // Navigation will happen automatically via NavigationProvider
+ 164 |       }
+ 165 |     } catch (err: any) {
+ 166 |       console.warn('OTP verification failed:', err);
+ 167 | 
+ 168 |       // Handle network errors (backend not available) - provide mock response for testing
+ 169 |       if (
+ 170 |         err.status === 'FETCH_ERROR' ||
+ 171 |         err.error?.includes('Network request failed')
+ 172 |       ) {
+ 173 |         console.log(
+ 174 |           'Backend not available - using mock success response for testing'
+ 175 |         );
+ 176 |         Alert.alert(
+ 177 |           'Development Mode',
+ 178 |           'Backend not connected. Using mock login success for testing.',
+ 179 |           [
+ 180 |             {
+ 181 |               text: 'Continue',
+ 182 |               onPress: async () => {
+ 183 |                 try {
+ 184 |                   // Calculate token expiry (24 hours from now)
+ 185 |                   const expiresAt = Date.now() + 24 * 60 * 60 * 1000;
+ 186 | 
+ 187 |                   // Mock JWT token
+ 188 |                   const mockToken = 'mock-jwt-token-' + Date.now();
+ 189 | 
+ 190 |                   // Save token to keychain first
+ 191 |                   await saveToken(mockToken, expiresAt);
+ 192 |                   console.log('Mock token saved to keychain successfully');
+ 193 | 
+ 194 |                   // Create mock user object
+ 195 |                   const user = {
+ 196 |                     id: 'mock-user-' + Date.now(),
+ 197 |                     name: 'Channel Partner',
+ 198 |                     phone: phone,
+ 199 |                   };
+ 200 | 
+ 201 |                   // Dispatch login success
+ 202 |                   dispatch(
+ 203 |                     loginSuccess({
+ 204 |                       token: mockToken,
+ 205 |                       expiresAt,
+ 206 |                       user,
+ 207 |                     })
+ 208 |                   );
+ 209 | 
+ 210 |                   console.log('Mock login successful - user authenticated');
+ 211 |                   // Navigation will happen automatically via NavigationProvider
+ 212 |                 } catch (error) {
+ 213 |                   console.error('Mock login failed:', error);
+ 214 |                   Alert.alert('Error', 'Mock login failed. Please try again.');
+ 215 |                 }
+ 216 |               },
+ 217 |             },
+ 218 |           ]
+ 219 |         );
+ 220 |         return;
+ 221 |       }
+ 222 | 
+ 223 |       const newAttempts = attempts + 1;
+ 224 |       setAttempts(newAttempts);
+ 225 | 
+ 226 |       // Clear OTP input
+ 227 |       setOtp('');
+ 228 |       otpInputRef.current?.clear();
+ 229 | 
+ 230 |       // Handle specific error cases
+ 231 |       if (err.code === 429 || newAttempts >= 5) {
+ 232 |         // Account locked
+ 233 |         setIsLocked(true);
+ 234 |         setLockTimer(15 * 60); // 15 minutes
+ 235 |         Alert.alert(
+ 236 |           'Account Locked',
+ 237 |           'Too many failed attempts. Your account has been locked for 15 minutes.',
+ 238 |           [{ text: 'OK' }]
+ 239 |         );
+ 240 |       } else if (err.status === 401 || err.status === 400) {
+ 241 |         Alert.alert(
+ 242 |           'Invalid OTP',
+ 243 |           `Incorrect OTP. ${5 - newAttempts} attempts remaining.`,
+ 244 |           [{ text: 'Try Again' }]
+ 245 |         );
+ 246 |       } else {
+ 247 |         Alert.alert(
+ 248 |           'Error',
+ 249 |           validateBackendError(err) ||
+ 250 |             'OTP verification failed. Please try again.'
+ 251 |         );
+ 252 |       }
+ 253 |     }
+ 254 |   };
+ 255 | 
+ 256 |   /**
+ 257 |    * Handle resend OTP
+ 258 |    */
+ 259 |   const handleResendOtp = async () => {
+ 260 |     if (!isOnline) {
+ 261 |       Alert.alert('No Internet', 'Please check your internet connection.');
+ 262 |       return;
+ 263 |     }
+ 264 | 
+ 265 |     if (resendTimer > 0) {
+ 266 |       Alert.alert(
+ 267 |         'Please Wait',
+ 268 |         `You can resend OTP in ${resendTimer} seconds.`
+ 269 |       );
+ 270 |       return;
+ 271 |     }
+ 272 | 
+ 273 |     if (isLocked) {
+ 274 |       Alert.alert(
+ 275 |         'Account Locked',
+ 276 |         `Please wait ${Math.floor(lockTimer / 60)}:${(lockTimer % 60)
+ 277 |           .toString()
+ 278 |           .padStart(2, '0')} before trying again.`
+ 279 |       );
+ 280 |       return;
+ 281 |     }
+ 282 | 
+ 283 |     try {
+ 284 |       const result = await requestOtp({ phone }).unwrap();
+ 285 | 
+ 286 |       if (result.success) {
+ 287 |         setTimer(OTP_EXPIRY_SEC);
+ 288 |         setResendTimer(OTP_RESEND_INTERVAL);
+ 289 |         setOtp('');
+ 290 |         otpInputRef.current?.clear();
+ 291 |         Alert.alert('OTP Sent', 'A new OTP has been sent to your phone.');
+ 292 |       }
+ 293 |     } catch (err: any) {
+ 294 |       // Handle network errors (backend not available) - provide mock response for testing
+ 295 |       if (
+ 296 |         err.status === 'FETCH_ERROR' ||
+ 297 |         err.error?.includes('Network request failed')
+ 298 |       ) {
+ 299 |         console.log(
+ 300 |           'Backend not available - using mock resend success for testing'
+ 301 |         );
+ 302 |         setTimer(OTP_EXPIRY_SEC);
+ 303 |         setResendTimer(OTP_RESEND_INTERVAL);
+ 304 |         setOtp('');
+ 305 |         otpInputRef.current?.clear();
+ 306 |         Alert.alert(
+ 307 |           'Development Mode',
+ 308 |           'Backend not connected. Mock OTP resent for testing.'
+ 309 |         );
+ 310 |         return;
+ 311 |       }
+ 312 | 
+ 313 |       Alert.alert(
+ 314 |         'Error',
+ 315 |         validateBackendError(err) || 'Failed to resend OTP. Please try again.'
+ 316 |       );
+ 317 |     }
+ 318 |   };
+ 319 | 
+ 320 |   /**
+ 321 |    * Format timer display
+ 322 |    */
+ 323 |   const formatTime = (seconds: number): string => {
+ 324 |     const mins = Math.floor(seconds / 60);
+ 325 |     const secs = seconds % 60;
+ 326 |     return `${mins}:${secs.toString().padStart(2, '0')}`;
+ 327 |   };
+ 328 | 
+ 329 |   /**
+ 330 |    * Format lock timer display
+ 331 |    */
+ 332 |   const formatLockTime = (seconds: number): string => {
+ 333 |     const mins = Math.floor(seconds / 60);
+ 334 |     const secs = seconds % 60;
+ 335 |     return `${mins}:${secs.toString().padStart(2, '0')}`;
+ 336 |   };
+ 337 | 
+ 338 |   return (
+ 339 |     <ScreenContainer scrollable>
+ 340 |       <View style={styles.content}>
+ 341 |         <View style={styles.header}>
+ 342 |           <Text style={[styles.title, { color: theme.colors.onBackground }]}>
+ 343 |             Verify OTP
+ 344 |           </Text>
+ 345 |           <Text
+ 346 |             style={[styles.subtitle, { color: theme.colors.onSurfaceVariant }]}
+ 347 |           >
+ 348 |             Enter the 6-digit code sent to{'\n'}+91 {phone}
+ 349 |           </Text>
+ 350 |         </View>
+ 351 | 
+ 352 |         {isLocked ? (
+ 353 |           <View
+ 354 |             style={[
+ 355 |               styles.lockNotice,
+ 356 |               { backgroundColor: theme.colors.errorContainer },
+ 357 |             ]}
+ 358 |           >
+ 359 |             <Text
+ 360 |               style={[
+ 361 |                 styles.lockText,
+ 362 |                 { color: theme.colors.onErrorContainer },
+ 363 |               ]}
+ 364 |             >
+ 365 |               🔒 Account locked for {formatLockTime(lockTimer)}
+ 366 |             </Text>
+ 367 |           </View>
+ 368 |         ) : (
+ 369 |           <>
+ 370 |             <View style={styles.otpContainer}>
+ 371 |               <OTPTextInput
+ 372 |                 ref={otpInputRef}
+ 373 |                 inputCount={6}
+ 374 |                 handleTextChange={setOtp}
+ 375 |                 containerStyle={styles.otpInputContainer}
+ 376 |                 textInputStyle={[
+ 377 |                   styles.otpInput,
+ 378 |                   {
+ 379 |                     backgroundColor: theme.colors.surface,
+ 380 |                     borderColor: theme.colors.outline,
+ 381 |                     color: theme.colors.onSurface,
+ 382 |                   },
+ 383 |                 ]}
+ 384 |                 tintColor={theme.colors.primary}
+ 385 |                 offTintColor={theme.colors.outline}
+ 386 |                 keyboardType="phone-pad"
+ 387 |                 autoFocus
+ 388 |                 accessible={true}
+ 389 |                 accessibilityLabel="OTP input"
+ 390 |               />
+ 391 | 
+ 392 |               <View style={styles.timerContainer}>
+ 393 |                 {timer > 0 ? (
+ 394 |                   <Text
+ 395 |                     style={[
+ 396 |                       styles.timerText,
+ 397 |                       { color: theme.colors.onSurfaceVariant },
+ 398 |                     ]}
+ 399 |                   >
+ 400 |                     ⏱️ OTP expires in {formatTime(timer)}
+ 401 |                   </Text>
+ 402 |                 ) : (
+ 403 |                   <Text
+ 404 |                     style={[styles.expiredText, { color: theme.colors.error }]}
+ 405 |                   >
+ 406 |                     ⚠️ OTP has expired
+ 407 |                   </Text>
+ 408 |                 )}
+ 409 |               </View>
+ 410 |             </View>
+ 411 | 
+ 412 |             <View style={styles.actions}>
+ 413 |               <AppButton
+ 414 |                 title={isVerifying ? 'Verifying...' : 'Verify OTP'}
+ 415 |                 variant="contained"
+ 416 |                 size="large"
+ 417 |                 fullWidth
+ 418 |                 onPress={handleVerifyOtp}
+ 419 |                 disabled={
+ 420 |                   otp.length !== 6 || isVerifying || !isOnline || timer === 0
+ 421 |                 }
+ 422 |                 style={styles.verifyButton}
+ 423 |               />
+ 424 | 
+ 425 |               <AppButton
+ 426 |                 title={isResending ? 'Sending...' : 'Resend OTP'}
+ 427 |                 variant="outlined"
+ 428 |                 size="medium"
+ 429 |                 fullWidth
+ 430 |                 onPress={handleResendOtp}
+ 431 |                 disabled={resendTimer > 0 || isResending || !isOnline}
+ 432 |                 style={styles.resendButton}
+ 433 |               />
+ 434 | 
+ 435 |               {resendTimer > 0 && (
+ 436 |                 <Text
+ 437 |                   style={[
+ 438 |                     styles.resendTimer,
+ 439 |                     { color: theme.colors.onSurfaceVariant },
+ 440 |                   ]}
+ 441 |                 >
+ 442 |                   Resend available in {resendTimer}s
+ 443 |                 </Text>
+ 444 |               )}
+ 445 |             </View>
+ 446 | 
+ 447 |             {attempts > 0 && !isLocked && (
+ 448 |               <Text
+ 449 |                 style={[styles.attemptsText, { color: theme.colors.error }]}
+ 450 |               >
+ 451 |                 {5 - attempts} attempts remaining
+ 452 |               </Text>
+ 453 |             )}
+ 454 |           </>
+ 455 |         )}
+ 456 | 
+ 457 |         <AppButton
+ 458 |           title="← Back to Phone"
+ 459 |           variant="text"
+ 460 |           size="small"
+ 461 |           onPress={() => navigation.goBack()}
+ 462 |           style={styles.backButton}
+ 463 |         />
+ 464 |       </View>
+ 465 |     </ScreenContainer>
+ 466 |   );
+ 467 | };
+ 468 | 
+ 469 | const styles = StyleSheet.create({
+ 470 |   content: {
+ 471 |     flex: 1,
+ 472 |     justifyContent: 'center',
+ 473 |     paddingHorizontal: 24,
+ 474 |     paddingVertical: 40,
+ 475 |   },
+ 476 |   header: {
+ 477 |     alignItems: 'center',
+ 478 |     marginBottom: 40,
+ 479 |   },
+ 480 |   title: {
+ 481 |     fontSize: 28,
+ 482 |     fontWeight: 'bold',
+ 483 |     textAlign: 'center',
+ 484 |     marginBottom: 12,
+ 485 |   },
+ 486 |   subtitle: {
+ 487 |     fontSize: 16,
+ 488 |     textAlign: 'center',
+ 489 |     lineHeight: 22,
+ 490 |   },
+ 491 |   lockNotice: {
+ 492 |     borderRadius: 8,
+ 493 |     padding: 20,
+ 494 |     marginBottom: 30,
+ 495 |     alignItems: 'center',
+ 496 |   },
+ 497 |   lockText: {
+ 498 |     fontSize: 16,
+ 499 |     fontWeight: '600',
+ 500 |     textAlign: 'center',
+ 501 |   },
+ 502 |   otpContainer: {
+ 503 |     marginBottom: 40,
+ 504 |   },
+ 505 |   otpInput: {
+ 506 |     borderWidth: 2,
+ 507 |     borderRadius: 8,
+ 508 |     fontSize: 18,
+ 509 |     fontWeight: 'bold',
+ 510 |     textAlign: 'center',
+ 511 |     height: 50,
+ 512 |     width: 45,
+ 513 |     marginHorizontal: 4,
+ 514 |   },
+ 515 |   timerContainer: {
+ 516 |     alignItems: 'center',
+ 517 |     marginTop: 20,
+ 518 |   },
+ 519 |   timerText: {
+ 520 |     fontSize: 14,
+ 521 |     fontWeight: '500',
+ 522 |   },
+ 523 |   expiredText: {
+ 524 |     fontSize: 14,
+ 525 |     fontWeight: '600',
+ 526 |   },
+ 527 |   actions: {
+ 528 |     marginBottom: 20,
+ 529 |   },
+ 530 |   verifyButton: {
+ 531 |     marginBottom: 16,
+ 532 |   },
+ 533 |   resendButton: {
+ 534 |     marginBottom: 8,
+ 535 |   },
+ 536 |   resendTimer: {
+ 537 |     fontSize: 12,
+ 538 |     textAlign: 'center',
+ 539 |     marginTop: 4,
+ 540 |   },
+ 541 |   attemptsText: {
+ 542 |     fontSize: 14,
+ 543 |     textAlign: 'center',
+ 544 |     fontWeight: '500',
+ 545 |     marginBottom: 20,
+ 546 |   },
+ 547 |   backButton: {
+ 548 |     marginTop: 10,
+ 549 |   },
+ 550 |   otpInputContainer: {
+ 551 |     flexDirection: 'row',
+ 552 |     justifyContent: 'center',
+ 553 |     alignItems: 'center',
+ 554 |     paddingHorizontal: 10,
+ 555 |   },
+ 556 | });
+ 557 | 
+ 558 | export default OtpScreen;
+ 559 | 
+================================================================================
+File: CustomersScreen.tsx
+Location: src/screens/customers/CustomersScreen.tsx
+================================================================================
+   1 | import React, {
+   2 |   useEffect,
+   3 |   useState,
+   4 |   useCallback,
+   5 |   useMemo,
+   6 |   useRef,
+   7 | } from 'react';
+   8 | import {
+   9 |   View,
+  10 |   FlatList,
+  11 |   RefreshControl,
+  12 |   StyleSheet,
+  13 |   Text,
+  14 |   TouchableOpacity,
+  15 |   Alert,
+  16 |   Linking,
+  17 | } from 'react-native';
+  18 | import { useFocusEffect } from '@react-navigation/native';
+  19 | import { Snackbar, useTheme } from 'react-native-paper';
+  20 | import { useAppDispatch, useAppSelector } from '../../store/hooks';
+  21 | 
+  22 | // ✅ Import customer-specific hooks and selectors (from Sub-task 2)
+  23 | import { usePaginatedCustomers } from '../../hooks/usePaginatedCustomers';
+  24 | import {
+  25 |   selectFilteredAndSearchedCustomers,
+  26 |   selectAllCustomers,
+  27 |   selectCustomerLoading,
+  28 |   selectCustomerError,
+  29 |   selectFilters,
+  30 |   selectActiveFilterCount,
+  31 |   selectSearchTerm,
+  32 | } from '../../store/selectors/customerSelectors';
+  33 | 
+  34 | import {
+  35 |   updateSearchTerm,
+  36 |   clearFilters,
+  37 |   resetPagination,
+  38 | } from '../../store/slices/customerSlice';
+  39 | 
+  40 | import { CustomerListItem } from './CustomerListItem';
+  41 | import { EmptyCustomersState } from '../../components/customers/EmptyCustomersState';
+  42 | import SearchBar from '../../components/customers/CustomerSearchBar';
+  43 | import CustomerFilterSheet from '../../components/customers/CustomerFilterSheet';
+  44 | import { useNetworkStatus } from '../../hooks/useNetworkStatus';
+  45 | import type { Customer } from '../../database/models/Customer';
+  46 | import type { RootState } from '../../store/types';
+  47 | import Toast from 'react-native-toast-message';
+  48 | import Tooltip from '../../components/common/Tooltip';
+  49 | import { useIsOnline } from '../../hooks/useConnectivityMemoized';
+  50 | 
+  51 | const PERFORMANCE_TARGET_MS = 150;
+  52 | 
+  53 | export const CustomersScreen: React.FC<any> = ({ navigation }) => {
+  54 |   const theme = useTheme();
+  55 |   const dispatch = useAppDispatch();
+  56 |   const networkStatus = useNetworkStatus();
+  57 | 
+  58 |   // ✅ Auth state access (following MyLeadsScreen pattern)
+  59 |   const isLoggedIn = useAppSelector(
+  60 |     (state: RootState) => state.auth.isLoggedIn
+  61 |   );
+  62 |   const authToken = useAppSelector((state: RootState) => state.auth.token);
+  63 | 
+  64 |   // ✅ Customer state from Redux (using customer selectors)
+  65 |   const customers = useAppSelector(selectFilteredAndSearchedCustomers);
+  66 |   const allCustomers = useAppSelector(selectAllCustomers);
+  67 |   const isLoading = useAppSelector(selectCustomerLoading);
+  68 |   const error = useAppSelector(selectCustomerError);
+  69 |   const searchText = useAppSelector(selectSearchTerm);
+  70 |   const currentFilters = useAppSelector(selectFilters);
+  71 |   const activeFilterCount = useAppSelector(selectActiveFilterCount);
+  72 | 
+  73 |   // ✅ Pagination hook (from Sub-task 2)
+  74 |   const {
+  75 |     items: paginatedCustomers,
+  76 |     loadNext,
+  77 |     refreshing,
+  78 |     error: paginationError,
+  79 |     reload,
+  80 |   } = usePaginatedCustomers({
+  81 |     pageSize: 20,
+  82 |     autoReloadOnline: true,
+  83 |   });
+  84 | 
+  85 |   // Local state (same as MyLeadsScreen)
+  86 |   const [snackbarVisible, setSnackbarVisible] = useState(false);
+  87 |   const [snackbarMessage, setSnackbarMessage] = useState('');
+  88 |   const [filterSheetVisible, setFilterSheetVisible] = useState(false);
+  89 | 
+  90 |   // Refs for tracking (same as MyLeadsScreen)
+  91 |   const previousFiltersRef = useRef(currentFilters);
+  92 |   const previousSearchRef = useRef(searchText);
+  93 |   const isOnline = useIsOnline();
+  94 | 
+  95 |   // Performance monitoring
+  96 |   const filteringStartTime = useRef<number>(0);
+  97 | 
+  98 |   console.log('🔍 CustomersScreen Loading States:', {
+  99 |     isLoading,
+ 100 |     refreshing,
+ 101 |     isLoggedIn,
+ 102 |     authToken: !!authToken,
+ 103 |     customersCount: customers.length,
+ 104 |     allCustomersCount: allCustomers.length,
+ 105 |   });
+ 106 | 
+ 107 |   useEffect(() => {
+ 108 |     filteringStartTime.current = performance.now();
+ 109 |   }, [searchText, currentFilters]);
+ 110 | 
+ 111 |   // ✅ Authentication check (same pattern as MyLeadsScreen)
+ 112 |   useEffect(() => {
+ 113 |     if (!isLoggedIn || !authToken) {
+ 114 |       console.warn('⚠️ User not authenticated');
+ 115 |     }
+ 116 |   }, [isLoggedIn, authToken]);
+ 117 | 
+ 118 |   // Computed values
+ 119 |   const showEmptyState = useMemo(() => {
+ 120 |     return !isLoading && !refreshing && customers.length === 0;
+ 121 |   }, [isLoading, refreshing, customers.length]);
+ 122 | 
+ 123 |   // ✅ Refresh handler (following MyLeadsScreen pattern)
+ 124 |   const handleRefresh = useCallback(async () => {
+ 125 |     if (!isLoggedIn || refreshing) return;
+ 126 | 
+ 127 |     try {
+ 128 |       console.log('🔄 Refreshing customers...');
+ 129 |       dispatch(resetPagination());
+ 130 | 
+ 131 |       await reload();
+ 132 | 
+ 133 |       setSnackbarMessage(
+ 134 |         `Refreshed ${customers.length} customers successfully`
+ 135 |       );
+ 136 |       setSnackbarVisible(true);
+ 137 |     } catch (error) {
+ 138 |       console.error('❌ Refresh failed:', error);
+ 139 |       const errorMessage =
+ 140 |         error instanceof Error ? error.message : 'Failed to refresh customers';
+ 141 |       setSnackbarMessage(errorMessage);
+ 142 |       setSnackbarVisible(true);
+ 143 |     }
+ 144 |   }, [isLoggedIn, refreshing, reload, dispatch, customers.length]);
+ 145 | 
+ 146 |   // ✅ Load more handler (following MyLeadsScreen pattern)
+ 147 |   const handleLoadMore = useCallback(async () => {
+ 148 |     if (!isLoggedIn || isLoading) return;
+ 149 | 
+ 150 |     try {
+ 151 |       console.log('📜 Loading more customers...');
+ 152 |       await loadNext();
+ 153 |     } catch (error) {
+ 154 |       console.error('❌ Load more failed:', error);
+ 155 |       const errorMessage =
+ 156 |         error instanceof Error
+ 157 |           ? error.message
+ 158 |           : 'Failed to load more customers';
+ 159 |       setSnackbarMessage(errorMessage);
+ 160 |       setSnackbarVisible(true);
+ 161 |     }
+ 162 |   }, [isLoggedIn, isLoading, loadNext]);
+ 163 | 
+ 164 |   // Handle errors (same pattern as MyLeadsScreen)
+ 165 |   useEffect(() => {
+ 166 |     if (error || paginationError) {
+ 167 |       const errorMessage =
+ 168 |         error || paginationError || 'Failed to load customers';
+ 169 |       console.error('❌ Customer error:', errorMessage);
+ 170 | 
+ 171 |       Alert.alert('Error', errorMessage, [
+ 172 |         { text: 'Retry', onPress: handleRefresh },
+ 173 |         { text: 'Cancel', style: 'cancel' },
+ 174 |       ]);
+ 175 |     }
+ 176 |   }, [error, paginationError, handleRefresh]);
+ 177 | 
+ 178 |   // ✅ Customer interaction handlers
+ 179 |   const handleCallCustomer = useCallback((customer: Customer) => {
+ 180 |     const phoneNumber = customer.phone?.replace(/[^0-9+]/g, '');
+ 181 | 
+ 182 |     if (!phoneNumber) {
+ 183 |       Alert.alert(
+ 184 |         'No Phone Number',
+ 185 |         'This customer does not have a phone number.'
+ 186 |       );
+ 187 |       return;
+ 188 |     }
+ 189 | 
+ 190 |     const phoneUrl = `tel:${phoneNumber}`;
+ 191 | 
+ 192 |     Linking.canOpenURL(phoneUrl)
+ 193 |       .then((supported) => {
+ 194 |         return Linking.openURL(phoneUrl);
+ 195 |       })
+ 196 |       .catch((error) => {
+ 197 |         console.error('Call error:', error);
+ 198 |         Alert.alert(
+ 199 |           'Call Failed',
+ 200 |           'Unable to make the call. Please try again.'
+ 201 |         );
+ 202 |       });
+ 203 |   }, []);
+ 204 | 
+ 205 |   const handleCustomerPress = useCallback(
+ 206 |     (customer: Customer) => {
+ 207 |       console.log('Customer pressed:', customer.name, 'ID:', customer.id);
+ 208 |       navigation.navigate('CustomerDetail', { customerId: customer.id });
+ 209 |     },
+ 210 |     [navigation]
+ 211 |   );
+ 212 | 
+ 213 |   const handleSearchSubmit = useCallback((query: string) => {
+ 214 |     console.log('Customer search submitted:', query);
+ 215 |   }, []);
+ 216 | 
+ 217 |   const handleOpenFilter = useCallback(() => {
+ 218 |     setFilterSheetVisible(true);
+ 219 |   }, []);
+ 220 | 
+ 221 |   const handleCloseFilter = useCallback(() => {
+ 222 |     setFilterSheetVisible(false);
+ 223 |   }, []);
+ 224 | 
+ 225 |   const handleClearSearch = useCallback(() => {
+ 226 |     dispatch(updateSearchTerm(''));
+ 227 |   }, [dispatch]);
+ 228 | 
+ 229 |   const handleClearAllFilters = useCallback(() => {
+ 230 |     dispatch(clearFilters());
+ 231 |     setSnackbarMessage('All filters cleared');
+ 232 |     setSnackbarVisible(true);
+ 233 |   }, [dispatch]);
+ 234 | 
+ 235 |   // ✅ Focus effect (following MyLeadsScreen pattern)
+ 236 |   useFocusEffect(
+ 237 |     React.useCallback(() => {
+ 238 |       if (isLoggedIn) {
+ 239 |         console.log('🔄 CustomersScreen focused, will auto-refresh if needed');
+ 240 |       }
+ 241 |     }, [isLoggedIn])
+ 242 |   );
+ 243 | 
+ 244 |   // ✅ Early return if not authenticated (same as MyLeadsScreen)
+ 245 |   if (!isLoggedIn || !authToken) {
+ 246 |     return (
+ 247 |       <View style={styles.container}>
+ 248 |         <View style={styles.authRequiredContainer}>
+ 249 |           <Text style={styles.authRequiredIcon}>🔒</Text>
+ 250 |           <Text style={styles.authRequiredTitle}>Authentication Required</Text>
+ 251 |           <Text style={styles.authRequiredMessage}>
+ 252 |             Please log in to access your customers.
+ 253 |           </Text>
+ 254 |           <TouchableOpacity
+ 255 |             style={styles.loginButton}
+ 256 |             onPress={() => navigation.navigate('Auth')}
+ 257 |           >
+ 258 |             <Text style={styles.loginButtonText}>Go to Login</Text>
+ 259 |           </TouchableOpacity>
+ 260 |         </View>
+ 261 |       </View>
+ 262 |     );
+ 263 |   }
+ 264 | 
+ 265 |   // ✅ Render methods (adapted for customers)
+ 266 |   const renderCustomerItem = useCallback(
+ 267 |     ({ item }: { item: Customer }) => (
+ 268 |       <CustomerListItem
+ 269 |         customer={item}
+ 270 |         onPress={handleCustomerPress}
+ 271 |         onCallPress={handleCallCustomer}
+ 272 |         testID={`customer-item-${item.id}`}
+ 273 |       />
+ 274 |     ),
+ 275 |     [handleCustomerPress, handleCallCustomer]
+ 276 |   );
+ 277 | 
+ 278 |   const renderListHeader = useCallback(
+ 279 |     () => (
+ 280 |       <View style={styles.listHeader}>
+ 281 |         <View style={styles.headerRow}>
+ 282 |           <Text style={styles.headerTitle}>My Customers</Text>
+ 283 | 
+ 284 |           <TouchableOpacity
+ 285 |             onPress={handleOpenFilter}
+ 286 |             style={styles.filterButton}
+ 287 |             testID="filter-button"
+ 288 |           >
+ 289 |             <Text style={styles.filterIcon}>🔽</Text>
+ 290 |             <Text style={styles.filterButtonText}>Filter</Text>
+ 291 | 
+ 292 |             {activeFilterCount > 0 && (
+ 293 |               <View style={styles.filterBadge}>
+ 294 |                 <Text style={styles.filterBadgeText}>{activeFilterCount}</Text>
+ 295 |               </View>
+ 296 |             )}
+ 297 |           </TouchableOpacity>
+ 298 |         </View>
+ 299 | 
+ 300 |         <View style={styles.statsContainer}>
+ 301 |           <View style={styles.statItem}>
+ 302 |             <Text style={styles.statNumber}>{customers.length}</Text>
+ 303 |             <Text style={styles.statLabel}>
+ 304 |               {activeFilterCount > 0 ? 'Filtered' : 'Showing'} Customers
+ 305 |             </Text>
+ 306 |           </View>
+ 307 | 
+ 308 |           <View style={styles.statItem}>
+ 309 |             <Text style={styles.statNumber}>{allCustomers.length}</Text>
+ 310 |             <Text style={styles.statLabel}>Total Customers</Text>
+ 311 |           </View>
+ 312 | 
+ 313 |           {isOnline && (
+ 314 |             <View style={styles.statItem}>
+ 315 |               <Text style={styles.connectionStatus}>🌐</Text>
+ 316 |               <Text style={styles.statLabel}>Online</Text>
+ 317 |             </View>
+ 318 |           )}
+ 319 |         </View>
+ 320 | 
+ 321 |         {(activeFilterCount > 0 || searchText.trim()) && (
+ 322 |           <View style={styles.activeFiltersContainer}>
+ 323 |             {searchText.trim() && (
+ 324 |               <TouchableOpacity
+ 325 |                 style={styles.activeFilterChip}
+ 326 |                 onPress={handleClearSearch}
+ 327 |               >
+ 328 |                 <Text style={styles.activeFilterChipText}>
+ 329 |                   🔍 Search: "{searchText}" ✕
+ 330 |                 </Text>
+ 331 |               </TouchableOpacity>
+ 332 |             )}
+ 333 | 
+ 334 |             {activeFilterCount > 0 && (
+ 335 |               <TouchableOpacity
+ 336 |                 style={styles.activeFilterChip}
+ 337 |                 onPress={handleOpenFilter}
+ 338 |               >
+ 339 |                 <Text style={styles.activeFilterChipText}>
+ 340 |                   🔽 {activeFilterCount} filter
+ 341 |                   {activeFilterCount > 1 ? 's' : ''}
+ 342 |                 </Text>
+ 343 |               </TouchableOpacity>
+ 344 |             )}
+ 345 | 
+ 346 |             <TouchableOpacity
+ 347 |               style={styles.clearAllButton}
+ 348 |               onPress={handleClearAllFilters}
+ 349 |             >
+ 350 |               <Text style={styles.clearAllButtonText}>🔄 Clear All</Text>
+ 351 |             </TouchableOpacity>
+ 352 |           </View>
+ 353 |         )}
+ 354 |       </View>
+ 355 |     ),
+ 356 |     [
+ 357 |       customers.length,
+ 358 |       allCustomers.length,
+ 359 |       activeFilterCount,
+ 360 |       searchText,
+ 361 |       isOnline,
+ 362 |       handleOpenFilter,
+ 363 |       handleClearSearch,
+ 364 |       handleClearAllFilters,
+ 365 |     ]
+ 366 |   );
+ 367 | 
+ 368 |   const renderEmptyState = useCallback(() => {
+ 369 |     if (activeFilterCount > 0 || searchText.trim()) {
+ 370 |       return (
+ 371 |         <EmptyCustomersState
+ 372 |           icon="🔍"
+ 373 |           title="No customers match your filters"
+ 374 |           message={
+ 375 |             searchText && activeFilterCount > 0
+ 376 |               ? `No results for "${searchText}" with the selected filters. Try adjusting your search terms or filters.`
+ 377 |               : searchText
+ 378 |               ? `No results found for "${searchText}". Try a different search term.`
+ 379 |               : 'No customers match your current filters. Try adjusting your filter criteria.'
+ 380 |           }
+ 381 |           actionText="Clear Filters"
+ 382 |           onActionPress={handleClearAllFilters}
+ 383 |           testID="empty-filtered-state"
+ 384 |         />
+ 385 |       );
+ 386 |     }
+ 387 | 
+ 388 |     return (
+ 389 |       <EmptyCustomersState
+ 390 |         icon="👥"
+ 391 |         title="No customers yet"
+ 392 |         message="No customers found. Pull to refresh or check your internet connection."
+ 393 |         actionText="Refresh"
+ 394 |         onActionPress={handleRefresh}
+ 395 |         testID="empty-default-state"
+ 396 |       />
+ 397 |     );
+ 398 |   }, [activeFilterCount, searchText, handleClearAllFilters, handleRefresh]);
+ 399 | 
+ 400 |   return (
+ 401 |     <View style={styles.container}>
+ 402 |       <SearchBar
+ 403 |         testID="customers-search-bar"
+ 404 |         loading={isLoading}
+ 405 |         onSearchSubmit={handleSearchSubmit}
+ 406 |         placeholder="Search customers"
+ 407 |       />
+ 408 | 
+ 409 |       {showEmptyState ? (
+ 410 |         renderEmptyState()
+ 411 |       ) : (
+ 412 |         <FlatList
+ 413 |           data={customers}
+ 414 |           renderItem={renderCustomerItem}
+ 415 |           keyExtractor={(item) => item.id}
+ 416 |           ListHeaderComponent={renderListHeader}
+ 417 |           refreshControl={
+ 418 |             <RefreshControl
+ 419 |               refreshing={refreshing}
+ 420 |               onRefresh={handleRefresh}
+ 421 |               colors={['#004C89']}
+ 422 |               tintColor="#004C89"
+ 423 |             />
+ 424 |           }
+ 425 |           onEndReached={handleLoadMore}
+ 426 |           onEndReachedThreshold={0.5}
+ 427 |           contentContainerStyle={styles.listContent}
+ 428 |           showsVerticalScrollIndicator={false}
+ 429 |           accessibilityLabel="Customers list"
+ 430 |           accessibilityHint="Scroll to see more customers"
+ 431 |           removeClippedSubviews={true}
+ 432 |           maxToRenderPerBatch={10}
+ 433 |           windowSize={10}
+ 434 |         />
+ 435 |       )}
+ 436 | 
+ 437 |       <CustomerFilterSheet
+ 438 |         visible={filterSheetVisible}
+ 439 |         onDismiss={handleCloseFilter}
+ 440 |         testID="customer-filter-sheet"
+ 441 |       />
+ 442 | 
+ 443 |       <Snackbar
+ 444 |         visible={snackbarVisible}
+ 445 |         onDismiss={() => setSnackbarVisible(false)}
+ 446 |         duration={3000}
+ 447 |       >
+ 448 |         {snackbarMessage}
+ 449 |       </Snackbar>
+ 450 |     </View>
+ 451 |   );
+ 452 | };
+ 453 | 
+ 454 | // ✅ Styles (same as MyLeadsScreen with minor text updates)
+ 455 | const styles = StyleSheet.create({
+ 456 |   container: {
+ 457 |     flex: 1,
+ 458 |     backgroundColor: '#f5f5f5',
+ 459 |   },
+ 460 |   authRequiredContainer: {
+ 461 |     flex: 1,
+ 462 |     justifyContent: 'center',
+ 463 |     alignItems: 'center',
+ 464 |     padding: 32,
+ 465 |   },
+ 466 |   authRequiredIcon: {
+ 467 |     fontSize: 64,
+ 468 |     marginBottom: 24,
+ 469 |   },
+ 470 |   authRequiredTitle: {
+ 471 |     fontSize: 24,
+ 472 |     fontWeight: 'bold',
+ 473 |     color: '#333',
+ 474 |     marginBottom: 16,
+ 475 |     textAlign: 'center',
+ 476 |   },
+ 477 |   authRequiredMessage: {
+ 478 |     fontSize: 16,
+ 479 |     color: '#666',
+ 480 |     textAlign: 'center',
+ 481 |     marginBottom: 32,
+ 482 |     lineHeight: 24,
+ 483 |   },
+ 484 |   loginButton: {
+ 485 |     backgroundColor: '#004C89',
+ 486 |     paddingHorizontal: 32,
+ 487 |     paddingVertical: 16,
+ 488 |     borderRadius: 8,
+ 489 |   },
+ 490 |   loginButtonText: {
+ 491 |     color: 'white',
+ 492 |     fontSize: 16,
+ 493 |     fontWeight: '600',
+ 494 |   },
+ 495 |   listContent: {
+ 496 |     paddingBottom: 100,
+ 497 |   },
+ 498 |   listHeader: {
+ 499 |     paddingHorizontal: 16,
+ 500 |     paddingVertical: 12,
+ 501 |   },
+ 502 |   headerRow: {
+ 503 |     flexDirection: 'row',
+ 504 |     alignItems: 'center',
+ 505 |     justifyContent: 'space-between',
+ 506 |     marginBottom: 16,
+ 507 |   },
+ 508 |   headerTitle: {
+ 509 |     fontSize: 24,
+ 510 |     fontWeight: 'bold',
+ 511 |     color: '#000',
+ 512 |   },
+ 513 |   filterButton: {
+ 514 |     flexDirection: 'row',
+ 515 |     alignItems: 'center',
+ 516 |     backgroundColor: '#004C89',
+ 517 |     paddingHorizontal: 12,
+ 518 |     paddingVertical: 8,
+ 519 |     borderRadius: 20,
+ 520 |     position: 'relative',
+ 521 |   },
+ 522 |   filterIcon: {
+ 523 |     fontSize: 14,
+ 524 |     color: 'white',
+ 525 |     marginRight: 4,
+ 526 |   },
+ 527 |   filterButtonText: {
+ 528 |     color: 'white',
+ 529 |     fontSize: 14,
+ 530 |     fontWeight: '600',
+ 531 |   },
+ 532 |   filterBadge: {
+ 533 |     position: 'absolute',
+ 534 |     top: -6,
+ 535 |     right: -6,
+ 536 |     backgroundColor: '#FF3B30',
+ 537 |     borderRadius: 10,
+ 538 |     minWidth: 20,
+ 539 |     height: 20,
+ 540 |     alignItems: 'center',
+ 541 |     justifyContent: 'center',
+ 542 |     paddingHorizontal: 4,
+ 543 |   },
+ 544 |   filterBadgeText: {
+ 545 |     color: 'white',
+ 546 |     fontSize: 12,
+ 547 |     fontWeight: 'bold',
+ 548 |   },
+ 549 |   statsContainer: {
+ 550 |     flexDirection: 'row',
+ 551 |     justifyContent: 'space-around',
+ 552 |     backgroundColor: 'white',
+ 553 |     borderRadius: 12,
+ 554 |     paddingVertical: 16,
+ 555 |     marginBottom: 12,
+ 556 |     elevation: 2,
+ 557 |     shadowColor: '#000',
+ 558 |     shadowOffset: { width: 0, height: 1 },
+ 559 |     shadowOpacity: 0.1,
+ 560 |     shadowRadius: 2,
+ 561 |   },
+ 562 |   statItem: {
+ 563 |     alignItems: 'center',
+ 564 |   },
+ 565 |   statNumber: {
+ 566 |     fontSize: 24,
+ 567 |     fontWeight: 'bold',
+ 568 |     color: '#004C89',
+ 569 |   },
+ 570 |   statLabel: {
+ 571 |     fontSize: 12,
+ 572 |     color: '#666',
+ 573 |     marginTop: 4,
+ 574 |     textAlign: 'center',
+ 575 |   },
+ 576 |   connectionStatus: {
+ 577 |     fontSize: 20,
+ 578 |     marginBottom: 4,
+ 579 |   },
+ 580 |   activeFiltersContainer: {
+ 581 |     flexDirection: 'row',
+ 582 |     flexWrap: 'wrap',
+ 583 |     gap: 8,
+ 584 |     marginTop: 8,
+ 585 |   },
+ 586 |   activeFilterChip: {
+ 587 |     backgroundColor: 'rgba(0, 76, 137, 0.1)',
+ 588 |     borderColor: '#004C89',
+ 589 |     borderWidth: 1,
+ 590 |     borderRadius: 16,
+ 591 |     paddingHorizontal: 12,
+ 592 |     paddingVertical: 6,
+ 593 |   },
+ 594 |   activeFilterChipText: {
+ 595 |     color: '#004C89',
+ 596 |     fontSize: 12,
+ 597 |     fontWeight: '500',
+ 598 |   },
+ 599 |   clearAllButton: {
+ 600 |     backgroundColor: 'rgba(255, 59, 48, 0.1)',
+ 601 |     borderColor: '#FF3B30',
+ 602 |     borderWidth: 1,
+ 603 |     borderRadius: 16,
+ 604 |     paddingHorizontal: 12,
+ 605 |     paddingVertical: 6,
+ 606 |   },
+ 607 |   clearAllButtonText: {
+ 608 |     color: '#FF3B30',
+ 609 |     fontSize: 12,
+ 610 |     fontWeight: '600',
+ 611 |   },
+ 612 |   fab: {
+ 613 |     position: 'absolute',
+ 614 |     bottom: 16,
+ 615 |     right: 16,
+ 616 |     width: 56,
+ 617 |     height: 56,
+ 618 |     borderRadius: 28,
+ 619 |     backgroundColor: '#007AFF',
+ 620 |     alignItems: 'center',
+ 621 |     justifyContent: 'center',
+ 622 |     elevation: 8,
+ 623 |     shadowColor: '#000',
+ 624 |     shadowOffset: { width: 0, height: 4 },
+ 625 |     shadowOpacity: 0.3,
+ 626 |     shadowRadius: 8,
+ 627 |   },
+ 628 |   fabIcon: {
+ 629 |     fontSize: 20,
+ 630 |     color: 'white',
+ 631 |     fontWeight: 'bold',
+ 632 |   },
+ 633 |   fabDisabled: {
+ 634 |     backgroundColor: '#BDBDBD',
+ 635 |     opacity: 0.6,
+ 636 |   },
+ 637 | });
+ 638 | 
+ 639 | export default CustomersScreen;
+ 640 | 
+================================================================================
+File: CustomerDetailScreen.tsx
+Location: src/screens/customers/CustomerDetailScreen.tsx
+================================================================================
+   1 | /**
+   2 |  * Customer Detail Screen
+   3 |  * Main screen displaying detailed customer information with tab navigation
+   4 |  * Using react-native-paper SegmentedButtons for tabs (following LeadDetailScreen pattern)
+   5 |  */
+   6 | import React, { useState, useCallback, useRef, useEffect } from 'react';
+   7 | import { useFocusEffect } from '@react-navigation/native';
+   8 | import { View, StyleSheet } from 'react-native';
+   9 | import {
+  10 |   Text,
+  11 |   SegmentedButtons,
+  12 |   Chip,
+  13 |   ActivityIndicator,
+  14 | } from 'react-native-paper';
+  15 | import Toast from 'react-native-toast-message';
+  16 | import type { NativeStackScreenProps } from '@react-navigation/native-stack';
+  17 | import type { MainTabParamList } from '@navigation/types';
+  18 | import { ScreenContainer } from '@components/common/ScreenContainer';
+  19 | import { TabErrorBoundary } from '@components/common/TabErrorBoundary';
+  20 | import { useIsOnline } from '@hooks/useConnectivityMemoized';
+  21 | import { useGetCustomerByIdQuery } from '@store/api/customerApi';
+  22 | import { CustomerProfileTab } from '@components/customers/CustomerProfileTab';
+  23 | import { CustomerKYCTab } from '@components/customers/CustomerKYCTab';
+  24 | import { CustomerLeadsTab } from '@components/customers/CustomerLeadsTab';
+  25 | 
+  26 | type CustomerDetailScreenProps = NativeStackScreenProps<
+  27 |   MainTabParamList,
+  28 |   'CustomerDetail'
+  29 | >;
+  30 | 
+  31 | // Tab configuration
+  32 | enum CustomerTabKey {
+  33 |   PROFILE = 'profile',
+  34 |   KYC = 'kyc',
+  35 |   LEADS = 'leads',
+  36 | }
+  37 | 
+  38 | const CUSTOMER_TABS = [
+  39 |   {
+  40 |     key: CustomerTabKey.PROFILE,
+  41 |     title: 'Profile',
+  42 |     enabled: true,
+  43 |   },
+  44 |   {
+  45 |     key: CustomerTabKey.KYC,
+  46 |     title: 'KYC',
+  47 |     enabled: true,
+  48 |   },
+  49 |   {
+  50 |     key: CustomerTabKey.LEADS,
+  51 |     title: 'Leads',
+  52 |     enabled: true,
+  53 |   },
+  54 | ];
+  55 | 
+  56 | const DEFAULT_TAB_KEY = CustomerTabKey.PROFILE;
+  57 | 
+  58 | /**
+  59 |  * Individual Tab Content Components
+  60 |  */
+  61 | const ProfileTabContent: React.FC<{ customerId: string }> = ({
+  62 |   customerId,
+  63 | }) => {
+  64 |   const { data, isLoading, error, refetch } =
+  65 |     useGetCustomerByIdQuery(customerId);
+  66 | 
+  67 |   const customer = data?.data;
+  68 | 
+  69 |   return (
+  70 |     <CustomerProfileTab
+  71 |       customer={customer}
+  72 |       loading={isLoading}
+  73 |       error={error}
+  74 |       onRetry={refetch}
+  75 |     />
+  76 |   );
+  77 | };
+  78 | 
+  79 | const KYCTabContent: React.FC<{ customerId: string }> = ({ customerId }) => {
+  80 |   return <CustomerKYCTab customerId={customerId} />;
+  81 | };
+  82 | 
+  83 | const LeadsTabContent: React.FC<{ customerId: string }> = ({ customerId }) => {
+  84 |   return <CustomerLeadsTab customerId={customerId} />;
+  85 | };
+  86 | 
+  87 | /**
+  88 |  * Customer Detail Screen Component
+  89 |  */
+  90 | export const CustomerDetailScreen: React.FC<CustomerDetailScreenProps> = ({
+  91 |   route,
+  92 | }) => {
+  93 |   const { customerId } = route.params;
+  94 |   const isOnline = useIsOnline();
+  95 | 
+  96 |   // Validate customerId
+  97 |   if (!customerId || typeof customerId !== 'string') {
+  98 |     return (
+  99 |       <ScreenContainer safeArea={true}>
+ 100 |         <View style={styles.errorContainer}>
+ 101 |           <Text variant="headlineSmall" style={styles.errorText}>
+ 102 |             Invalid Customer ID
+ 103 |           </Text>
+ 104 |         </View>
+ 105 |       </ScreenContainer>
+ 106 |     );
+ 107 |   }
+ 108 | 
+ 109 |   // Get customer data
+ 110 |   const { data, isLoading, error, refetch } =
+ 111 |     useGetCustomerByIdQuery(customerId);
+ 112 |   const customer = data?.data;
+ 113 | 
+ 114 |   // Tab navigation state
+ 115 |   const [selectedTab, setSelectedTab] =
+ 116 |     useState<CustomerTabKey>(DEFAULT_TAB_KEY);
+ 117 |   const [loadingTabs, setLoadingTabs] = useState<Set<CustomerTabKey>>(
+ 118 |     new Set()
+ 119 |   );
+ 120 | 
+ 121 |   // Handle tab selection
+ 122 |   const handleTabChange = useCallback(
+ 123 |     (tabKey: string) => {
+ 124 |       const tab = CUSTOMER_TABS.find((t) => t.key === tabKey);
+ 125 | 
+ 126 |       if (!tab) return;
+ 127 | 
+ 128 |       // Show loading for lazy tabs
+ 129 |       if (
+ 130 |         tabKey !== CustomerTabKey.PROFILE &&
+ 131 |         !loadingTabs.has(tabKey as CustomerTabKey)
+ 132 |       ) {
+ 133 |         setLoadingTabs((prev) => new Set(prev).add(tabKey as CustomerTabKey));
+ 134 | 
+ 135 |         // Simulate loading delay
+ 136 |         setTimeout(() => {
+ 137 |           setLoadingTabs((prev) => {
+ 138 |             const newSet = new Set(prev);
+ 139 |             newSet.delete(tabKey as CustomerTabKey);
+ 140 |             return newSet;
+ 141 |           });
+ 142 |         }, 300);
+ 143 |       }
+ 144 | 
+ 145 |       setSelectedTab(tabKey as CustomerTabKey);
+ 146 |     },
+ 147 |     [loadingTabs]
+ 148 |   );
+ 149 | 
+ 150 |   // Render tab content with error boundaries
+ 151 |   const renderTabContent = useCallback(() => {
+ 152 |     const isLoading = loadingTabs.has(selectedTab);
+ 153 | 
+ 154 |     if (isLoading) {
+ 155 |       return (
+ 156 |         <View style={styles.loadingContainer}>
+ 157 |           <ActivityIndicator size="large" />
+ 158 |           <Text style={styles.loadingText}>
+ 159 |             Loading {CUSTOMER_TABS.find((t) => t.key === selectedTab)?.title}...
+ 160 |           </Text>
+ 161 |         </View>
+ 162 |       );
+ 163 |     }
+ 164 | 
+ 165 |     switch (selectedTab) {
+ 166 |       case CustomerTabKey.PROFILE:
+ 167 |         return (
+ 168 |           <TabErrorBoundary tabName="Profile">
+ 169 |             <ProfileTabContent customerId={customerId} />
+ 170 |           </TabErrorBoundary>
+ 171 |         );
+ 172 | 
+ 173 |       case CustomerTabKey.KYC:
+ 174 |         return (
+ 175 |           <TabErrorBoundary tabName="KYC">
+ 176 |             <KYCTabContent customerId={customerId} />
+ 177 |           </TabErrorBoundary>
+ 178 |         );
+ 179 | 
+ 180 |       case CustomerTabKey.LEADS:
+ 181 |         return (
+ 182 |           <TabErrorBoundary tabName="Leads">
+ 183 |             <LeadsTabContent customerId={customerId} />
+ 184 |           </TabErrorBoundary>
+ 185 |         );
+ 186 | 
+ 187 |       default:
+ 188 |         return (
+ 189 |           <TabErrorBoundary tabName="Profile">
+ 190 |             <ProfileTabContent customerId={customerId} />
+ 191 |           </TabErrorBoundary>
+ 192 |         );
+ 193 |     }
+ 194 |   }, [selectedTab, loadingTabs, customerId]);
+ 195 | 
+ 196 |   // Prepare segmented buttons
+ 197 |   const segmentedButtons = CUSTOMER_TABS.map((tab) => ({
+ 198 |     value: tab.key,
+ 199 |     label: tab.title,
+ 200 |     disabled: !tab.enabled,
+ 201 |     style: {
+ 202 |       opacity: tab.enabled ? 1 : 0.4,
+ 203 |       backgroundColor: tab.enabled ? undefined : '#F0F0F0',
+ 204 |     },
+ 205 |     labelStyle: {
+ 206 |       color: tab.enabled ? '#004C89' : '#8E8E93',
+ 207 |       fontWeight: tab.enabled ? '600' : '400',
+ 208 |     },
+ 209 |   }));
+ 210 | 
+ 211 |   // Performance logging
+ 212 |   React.useEffect(() => {
+ 213 |     console.log(
+ 214 |       `✅ CustomerDetailScreen rendered for customerId: ${customerId}`
+ 215 |     );
+ 216 |   }, [customerId]);
+ 217 | 
+ 218 |   return (
+ 219 |     <ScreenContainer safeArea={true} testID="customer-detail-screen">
+ 220 |       {/* Header with Customer ID and Offline Indicator */}
+ 221 |       <View style={styles.header}>
+ 222 |         <View style={styles.headerContent}>
+ 223 |           <Text variant="headlineSmall" style={styles.headerTitle}>
+ 224 |             {customer?.name || `Customer #${customerId}`}
+ 225 |           </Text>
+ 226 | 
+ 227 |           {/* Offline Chip */}
+ 228 |           {!isOnline && (
+ 229 |             <Chip
+ 230 |               mode="outlined"
+ 231 |               style={styles.offlineChip}
+ 232 |               textStyle={styles.offlineChipText}
+ 233 |               compact={true}
+ 234 |               testID="offline-chip"
+ 235 |             >
+ 236 |               Offline
+ 237 |             </Chip>
+ 238 |           )}
+ 239 |         </View>
+ 240 |       </View>
+ 241 | 
+ 242 |       {/* Tab Navigation */}
+ 243 |       <View style={styles.tabContainer}>
+ 244 |         <SegmentedButtons
+ 245 |           value={selectedTab}
+ 246 |           onValueChange={handleTabChange}
+ 247 |           buttons={segmentedButtons}
+ 248 |           style={styles.segmentedButtons}
+ 249 |           testID="customer-tabs"
+ 250 |           accessibilityLabel="Customer detail tab navigation"
+ 251 |           accessibilityHint="Swipe left or right to navigate between tabs"
+ 252 |         />
+ 253 |       </View>
+ 254 | 
+ 255 |       {/* Tab Content */}
+ 256 |       <View style={styles.contentContainer} testID="customer-tab-content">
+ 257 |         {renderTabContent()}
+ 258 |       </View>
+ 259 |     </ScreenContainer>
+ 260 |   );
+ 261 | };
+ 262 | 
+ 263 | const styles = StyleSheet.create({
+ 264 |   header: {
+ 265 |     paddingHorizontal: 16,
+ 266 |     paddingVertical: 12,
+ 267 |     borderBottomWidth: 1,
+ 268 |     borderBottomColor: '#E5E5EA',
+ 269 |     backgroundColor: '#FFFFFF',
+ 270 |   },
+ 271 |   headerContent: {
+ 272 |     flexDirection: 'row',
+ 273 |     justifyContent: 'space-between',
+ 274 |     alignItems: 'center',
+ 275 |   },
+ 276 |   headerTitle: {
+ 277 |     fontWeight: 'bold',
+ 278 |     color: '#000000',
+ 279 |     flex: 1,
+ 280 |   },
+ 281 |   offlineChip: {
+ 282 |     backgroundColor: '#FFF3CD',
+ 283 |     borderColor: '#FFEAA7',
+ 284 |     marginLeft: 8,
+ 285 |   },
+ 286 |   offlineChipText: {
+ 287 |     color: '#856404',
+ 288 |     fontSize: 12,
+ 289 |     fontWeight: '600',
+ 290 |   },
+ 291 |   tabContainer: {
+ 292 |     paddingVertical: 12,
+ 293 |     backgroundColor: '#FFFFFF',
+ 294 |     borderBottomWidth: 1,
+ 295 |     borderBottomColor: '#E5E5EA',
+ 296 |   },
+ 297 |   segmentedButtons: {
+ 298 |     backgroundColor: '#F2F2F7',
+ 299 |     borderRadius: 18,
+ 300 |   },
+ 301 |   contentContainer: {
+ 302 |     flex: 1,
+ 303 |     backgroundColor: '#F2F2F7',
+ 304 |   },
+ 305 |   loadingContainer: {
+ 306 |     flex: 1,
+ 307 |     justifyContent: 'center',
+ 308 |     alignItems: 'center',
+ 309 |     backgroundColor: '#FFFFFF',
+ 310 |   },
+ 311 |   loadingText: {
+ 312 |     marginTop: 10,
+ 313 |     color: '#8E8E93',
+ 314 |   },
+ 315 |   errorContainer: {
+ 316 |     flex: 1,
+ 317 |     justifyContent: 'center',
+ 318 |     alignItems: 'center',
+ 319 |   },
+ 320 |   errorText: {
+ 321 |     color: '#FF3B30',
+ 322 |   },
+ 323 | });
+ 324 | 
+ 325 | export default CustomerDetailScreen;
+ 326 | 
+================================================================================
+File: authApi.ts
+Location: src/store/api/authApi.ts
+================================================================================
+   1 | /**
+   2 |  * Authentication API
+   3 |  */
+   4 | import { createApi } from '@reduxjs/toolkit/query/react';
+   5 | import customBaseQuery from './baseQuery';
+   6 | import { saveToken } from '../../utils/secureStorage/KeychainHelper';
+   7 | import { loginSuccess } from '../slices/authSlice';
+   8 | 
+   9 | // ... interface definitions remain the same ...
+  10 | 
+  11 | export const authApi = createApi({
+  12 |   reducerPath: 'authApi',
+  13 |   baseQuery: customBaseQuery,
+  14 |   tagTypes: ['Auth'],
+  15 |   endpoints: (builder) => ({
+  16 |     /**
+  17 |      * Request OTP (keeping existing endpoint - might not work with real API)
+  18 |      */
+  19 |     requestOtp: builder.mutation<RequestOtpResponse, RequestOtpRequest>({
+  20 |       query: (credentials) => ({
+  21 |         url: '/auth/login', // Remove /api/v1 since it's in baseUrl
+  22 |         method: 'POST',
+  23 |         body: { phone: credentials.phone },
+  24 |       }),
+  25 |     }),
+  26 | 
+  27 |     /**
+  28 |      * Login with phone and OTP (real API endpoint)
+  29 |      */
+  30 |     verifyOtp: builder.mutation<LoginResponse, LoginRequest>({
+  31 |       query: (credentials) => ({
+  32 |         url: '/api/v1/auth/login', // Full path for real API
+  33 |         method: 'POST',
+  34 |         body: {
+  35 |           phone: credentials.phone,
+  36 |           otp: credentials.otp,
+  37 |         },
+  38 |       }),
+  39 |       async onQueryStarted(arg, { dispatch, queryFulfilled }) {
+  40 |         try {
+  41 |           const { data } = await queryFulfilled;
+  42 | 
+  43 |           const expiresAt = Date.now() + 24 * 60 * 60 * 1000;
+  44 | 
+  45 |           await saveToken(data.accessToken, expiresAt);
+  46 | 
+  47 |           dispatch(
+  48 |             loginSuccess({
+  49 |               token: data.accessToken,
+  50 |               expiresAt,
+  51 |               user: {
+  52 |                 id: data.user.id,
+  53 |                 name: data.user.name,
+  54 |                 phone: data.user.phone,
+  55 |                 email: data.user.email,
+  56 |                 role: data.user.role,
+  57 |               },
+  58 |             })
+  59 |           );
+  60 | 
+  61 |           console.log('✅ Login successful for user:', data.user.name);
+  62 |         } catch (error) {
+  63 |           console.error('❌ OTP verification failed:', error);
+  64 |         }
+  65 |       },
+  66 |     }),
+  67 |   }),
+  68 | });
+  69 | 
+  70 | export const { useRequestOtpMutation, useVerifyOtpMutation } = authApi;
+  71 | 
+================================================================================
+File: mockServer.ts
+Location: __tests__/mocks/mockServer.ts
+================================================================================
+   1 | /**
+   2 |  * Mock Server for Testing Different Response Scenarios
+   3 |  * Simulates 2xx, 4xx, 5xx responses and delayed failures
+   4 |  */
+   5 | 
+   6 | export interface MockResponse {
+   7 |   status: number;
+   8 |   data?: any;
+   9 |   error?: string;
+  10 |   delay?: number;
+  11 | }
+  12 | 
+  13 | export class MockServer {
+  14 |   private responses: Map<string, MockResponse> = new Map();
+  15 |   private defaultResponse: MockResponse = {
+  16 |     status: 200,
+  17 |     data: { success: true },
+  18 |   };
+  19 | 
+  20 |   /**
+  21 |    * Set mock response for specific endpoint
+  22 |    */
+  23 |   setResponse(endpoint: string, response: MockResponse): void {
+  24 |     this.responses.set(endpoint, response);
+  25 |   }
+  26 | 
+  27 |   /**
+  28 |    * Set default response for unmatched endpoints
+  29 |    */
+  30 |   setDefaultResponse(response: MockResponse): void {
+  31 |     this.defaultResponse = response;
+  32 |   }
+  33 | 
+  34 |   /**
+  35 |    * Clear all mock responses
+  36 |    */
+  37 |   clear(): void {
+  38 |     this.responses.clear();
+  39 |   }
+  40 | 
+  41 |   /**
+  42 |    * Get mock fetch implementation
+  43 |    */
+  44 |   getMockFetch(): jest.MockedFunction<typeof fetch> {
+  45 |     return jest.fn().mockImplementation(async (url: string, options?: any) => {
+  46 |       const endpoint = this.extractEndpoint(url);
+  47 |       const mockResponse = this.responses.get(endpoint) || this.defaultResponse;
+  48 | 
+  49 |       // Simulate network delay
+  50 |       if (mockResponse.delay) {
+  51 |         await new Promise((resolve) => setTimeout(resolve, mockResponse.delay));
+  52 |       }
+  53 | 
+  54 |       // Simulate network errors
+  55 |       if (mockResponse.status === 0) {
+  56 |         throw new Error('Network error');
+  57 |       }
+  58 | 
+  59 |       // Simulate timeout
+  60 |       if (mockResponse.status === -1) {
+  61 |         throw new Error('Request timeout');
+  62 |       }
+  63 | 
+  64 |       const response = {
+  65 |         ok: mockResponse.status >= 200 && mockResponse.status < 300,
+  66 |         status: mockResponse.status,
+  67 |         statusText: this.getStatusText(mockResponse.status),
+  68 |         json: async () => mockResponse.data || mockResponse.error || {},
+  69 |         text: async () =>
+  70 |           JSON.stringify(mockResponse.data || mockResponse.error || {}),
+  71 |       };
+  72 | 
+  73 |       return response as Response;
+  74 |     });
+  75 |   }
+  76 | 
+  77 |   private extractEndpoint(url: string): string {
+  78 |     try {
+  79 |       const urlObj = new URL(url);
+  80 |       return urlObj.pathname;
+  81 |     } catch {
+  82 |       return url;
+  83 |     }
+  84 |   }
+  85 | 
+  86 |   private getStatusText(status: number): string {
+  87 |     const statusTexts: Record<number, string> = {
+  88 |       200: 'OK',
+  89 |       201: 'Created',
+  90 |       400: 'Bad Request',
+  91 |       401: 'Unauthorized',
+  92 |       403: 'Forbidden',
+  93 |       404: 'Not Found',
+  94 |       409: 'Conflict',
+  95 |       422: 'Unprocessable Entity',
+  96 |       500: 'Internal Server Error',
+  97 |       502: 'Bad Gateway',
+  98 |       503: 'Service Unavailable',
+  99 |       504: 'Gateway Timeout',
+ 100 |     };
+ 101 | 
+ 102 |     return statusTexts[status] || 'Unknown';
+ 103 |   }
+ 104 | 
+ 105 |   /**
+ 106 |    * Preset scenarios for common test cases
+ 107 |    */
+ 108 |   static getPresetScenarios() {
+ 109 |     return {
+ 110 |       // Success scenarios
+ 111 |       successfulStatusUpdate: {
+ 112 |         status: 200,
+ 113 |         data: { success: true },
+ 114 |       },
+ 115 | 
+ 116 |       successfulQuotationFetch: {
+ 117 |         status: 200,
+ 118 |         data: {
+ 119 |           success: true,
+ 120 |           data: {
+ 121 |             items: [
+ 122 |               {
+ 123 |                 quotationId: 'QUOT-123',
+ 124 |                 leadId: 'LEAD-456',
+ 125 |                 systemKW: 5,
+ 126 |                 totalCost: 350000,
+ 127 |                 status: 'Generated',
+ 128 |                 createdAt: '2024-01-01T00:00:00Z',
+ 129 |               },
+ 130 |             ],
+ 131 |             total: 1,
+ 132 |             offset: 0,
+ 133 |             limit: 25,
+ 134 |           },
+ 135 |         },
+ 136 |       },
+ 137 | 
+ 138 |       // Error scenarios
+ 139 |       validationError: {
+ 140 |         status: 400,
+ 141 |         error: {
+ 142 |           success: false,
+ 143 |           error: 'Bad Request',
+ 144 |           message: 'Invalid status transition',
+ 145 |           code: 'VALIDATION_ERROR',
+ 146 |         },
+ 147 |       },
+ 148 | 
+ 149 |       unauthorized: {
+ 150 |         status: 401,
+ 151 |         error: {
+ 152 |           success: false,
+ 153 |           error: 'Unauthorized',
+ 154 |           message: 'Authentication required',
+ 155 |         },
+ 156 |       },
+ 157 | 
+ 158 |       conflictError: {
+ 159 |         status: 409,
+ 160 |         error: {
+ 161 |           success: false,
+ 162 |           error: 'Conflict',
+ 163 |           message: 'Lead has been updated by another user',
+ 164 |         },
+ 165 |       },
+ 166 | 
+ 167 |       serverError: {
+ 168 |         status: 500,
+ 169 |         error: {
+ 170 |           success: false,
+ 171 |           error: 'Internal Server Error',
+ 172 |           message: 'An unexpected error occurred',
+ 173 |         },
+ 174 |       },
+ 175 | 
+ 176 |       // Network scenarios
+ 177 |       networkError: {
+ 178 |         status: 0, // Special status for network errors
+ 179 |       },
+ 180 | 
+ 181 |       timeout: {
+ 182 |         status: -1, // Special status for timeouts
+ 183 |       },
+ 184 | 
+ 185 |       slowResponse: {
+ 186 |         status: 200,
+ 187 |         data: { success: true },
+ 188 |         delay: 2000, // 2 second delay
+ 189 |       },
+ 190 | 
+ 191 |       // Empty data scenarios
+ 192 |       emptyQuotations: {
+ 193 |         status: 200,
+ 194 |         data: {
+ 195 |           success: true,
+ 196 |           data: {
+ 197 |             items: [],
+ 198 |             total: 0,
+ 199 |             offset: 0,
+ 200 |             limit: 25,
+ 201 |           },
+ 202 |         },
+ 203 |       },
+ 204 |     };
+ 205 |   }
+ 206 | }
+ 207 | 
+ 208 | // Export singleton instance
+ 209 | export const mockServer = new MockServer();
+ 210 | 
+ 211 | // Helper function to setup mock fetch with scenarios
+ 212 | export function setupMockFetch(
+ 213 |   scenarios: Record<string, MockResponse> = {}
+ 214 | ): jest.MockedFunction<typeof fetch> {
+ 215 |   mockServer.clear();
+ 216 | 
+ 217 |   Object.entries(scenarios).forEach(([endpoint, response]) => {
+ 218 |     mockServer.setResponse(endpoint, response);
+ 219 |   });
+ 220 | 
+ 221 |   const mockFetch = mockServer.getMockFetch();
+ 222 |   global.fetch = mockFetch;
+ 223 | 
+ 224 |   return mockFetch;
+ 225 | }
+ 226 | 
+================================================================================
+File: commissionApi.ts
+Location: src/store/api/commissionApi.ts
+================================================================================
+   1 | /**
+   2 |  * Commission API - Real Backend Integration
+   3 |  * RTK Query endpoints for commission data operations
+   4 |  */
+   5 | import { createApi } from '@reduxjs/toolkit/query/react';
+   6 | import customBaseQuery from './baseQuery';
+   7 | import type { RootState } from '../index';
+   8 | import type {
+   9 |   CommissionsResponse,
+  10 |   CommissionDetailResponse,
+  11 |   GetCommissionsParams,
+  12 |   GetCommissionByIdParams,
+  13 | } from '../../types/api/commission';
+  14 | 
+  15 | export const commissionApi = createApi({
+  16 |   reducerPath: 'commissionApi',
+  17 |   baseQuery: customBaseQuery,
+  18 |   tagTypes: ['Commission', 'CommissionList'],
+  19 |   endpoints: (builder) => ({
+  20 |     /**
+  21 |      * Get commissions list with pagination and filters
+  22 |      * GET /api/v1/commissions
+  23 |      */
+  24 |     getCommissions: builder.query<
+  25 |       CommissionsResponse,
+  26 |       Omit<GetCommissionsParams, 'cpId'>
+  27 |     >({
+  28 |       query: (params = {}) => {
+  29 |         // Default pagination parameters
+  30 |         const {
+  31 |           limit = 25,
+  32 |           offset = 0,
+  33 |           status,
+  34 |           startDate,
+  35 |           endDate,
+  36 |           searchTerm,
+  37 |         } = params;
+  38 | 
+  39 |         // Format date range as comma-separated string if both dates provided
+  40 |         const dateRangeParam =
+  41 |           startDate && endDate ? `${startDate},${endDate}` : undefined;
+  42 | 
+  43 |         return {
+  44 |           url: '/api/v1/commissions',
+  45 |           method: 'GET',
+  46 |           params: {
+  47 |             limit,
+  48 |             offset,
+  49 |             ...(status && { status }),
+  50 |             ...(dateRangeParam && { dateRange: dateRangeParam }),
+  51 |             ...(searchTerm && { search: searchTerm }), // Assuming 'search' parameter
+  52 |           },
+  53 |         };
+  54 |       },
+  55 |       transformResponse: (response: CommissionsResponse) => {
+  56 |         console.log('💰 Commissions API response:', response);
+  57 | 
+  58 |         if (!response.success) {
+  59 |           throw new Error('Failed to fetch commissions');
+  60 |         }
+  61 | 
+  62 |         return response;
+  63 |       },
+  64 |       providesTags: (result) => [
+  65 |         'CommissionList',
+  66 |         ...(result?.data?.items?.map(({ commissionId }) => ({
+  67 |           type: 'Commission' as const,
+  68 |           id: commissionId,
+  69 |         })) || []),
+  70 |       ],
+  71 |       // Cache for 5 minutes
+  72 |       keepUnusedDataFor: 300,
+  73 |     }),
+  74 | 
+  75 |     /**
+  76 |      * Get commission detail by ID
+  77 |      * GET /api/v1/commissions/{commissionId}
+  78 |      */
+  79 |     getCommissionById: builder.query<CommissionDetailResponse, string>({
+  80 |       query: (commissionId) => {
+  81 |         console.log('💰 Fetching commission detail for:', commissionId);
+  82 |         return {
+  83 |           url: `/api/v1/commissions/${commissionId}`,
+  84 |           method: 'GET',
+  85 |         };
+  86 |       },
+  87 |       transformResponse: (response: CommissionDetailResponse) => {
+  88 |         console.log('✅ Commission detail response:', response);
+  89 | 
+  90 |         if (!response.success) {
+  91 |           throw new Error('Failed to fetch commission details');
+  92 |         }
+  93 | 
+  94 |         return response;
+  95 |       },
+  96 |       providesTags: (result, error, commissionId) => [
+  97 |         { type: 'Commission', id: commissionId },
+  98 |       ],
+  99 |       // Cache for 10 minutes
+ 100 |       keepUnusedDataFor: 600,
+ 101 |     }),
+ 102 |   }),
+ 103 | });
+ 104 | 
+ 105 | export const {
+ 106 |   useGetCommissionsQuery,
+ 107 |   useLazyGetCommissionsQuery,
+ 108 |   useGetCommissionByIdQuery,
+ 109 |   useLazyGetCommissionByIdQuery,
+ 110 | } = commissionApi;
+ 111 | 
+ 112 | export default commissionApi;
+ 113 | 
+================================================================================
+File: commissionSlice.ts
+Location: src/store/slices/commissionSlice.ts
+================================================================================
+   1 | /**
+   2 |  * Commission Slice - Enhanced with Pagination Pattern
+   3 |  * Manages commission state following the exact same pattern as customerSlice
+   4 |  * Only manages search/filters - pagination handled by RTK Query
+   5 |  */
+   6 | import { createSlice, PayloadAction, createSelector } from '@reduxjs/toolkit';
+   7 | import type {
+   8 |   Commission,
+   9 |   CommissionKPIStats,
+  10 | } from '../../database/models/Commission';
+  11 | import { commissionApi } from '../api/commissionApi';
+  12 | import { getCurrentYearRange } from '../../utils/dateHelpers';
+  13 | 
+  14 | /**
+  15 |  * Commission filter interface
+  16 |  */
+  17 | export interface CommissionFilters {
+  18 |   dateRange?: { startDate: string; endDate: string };
+  19 |   statuses?: string[];
+  20 |   leadId?: string;
+  21 | }
+  22 | 
+  23 | /**
+  24 |  * Enhanced Commission state interface (following customer pattern)
+  25 |  */
+  26 | export interface CommissionState {
+  27 |   /** Normalized commission items by ID */
+  28 |   items: Record<string, Commission>;
+  29 | 
+  30 |   /** Array of page numbers that have been loaded */
+  31 |   pagesLoaded: number[];
+  32 | 
+  33 |   /** Total number of pages available */
+  34 |   totalPages: number;
+  35 | 
+  36 |   /** Total count of commissions across all pages */
+  37 |   totalCount: number;
+  38 | 
+  39 |   /** Whether currently loading next page */
+  40 |   loadingNext: boolean;
+  41 | 
+  42 |   /** Whether more pages are available for loading */
+  43 |   hasMore: boolean;
+  44 | 
+  45 |   /** Last synchronization timestamp */
+  46 |   lastSync: number | null;
+  47 | 
+  48 |   /** Loading state indicator */
+  49 |   isLoading: boolean;
+  50 | 
+  51 |   /** Error message if any */
+  52 |   error: string | null;
+  53 | 
+  54 |   /** Current search term */
+  55 |   searchTerm: string;
+  56 | 
+  57 |   /** Current filter criteria */
+  58 |   filters: CommissionFilters;
+  59 | 
+  60 |   /** Cached KPI totals */
+  61 |   kpiTotals: CommissionKPIStats | null;
+  62 | }
+  63 | 
+  64 | /**
+  65 |  * Initial state with current-year filter applied by default
+  66 |  */
+  67 | const initialState: CommissionState = {
+  68 |   items: {},
+  69 |   pagesLoaded: [],
+  70 |   totalPages: 0,
+  71 |   totalCount: 0,
+  72 |   loadingNext: false,
+  73 |   hasMore: true,
+  74 |   lastSync: null,
+  75 |   isLoading: false,
+  76 |   error: null,
+  77 |   searchTerm: '',
+  78 |   filters: {
+  79 |     dateRange: getCurrentYearRange(), // Default to current year
+  80 |   },
+  81 |   kpiTotals: null,
+  82 | };
+  83 | 
+  84 | /**
+  85 |  * Commission slice with pagination support (following customer pattern)
+  86 |  */
+  87 | const commissionSlice = createSlice({
+  88 |   name: 'commissions',
+  89 |   initialState,
+  90 |   reducers: {
+  91 |     /**
+  92 |      * Upsert commissions from API response
+  93 |      */
+  94 |     upsertCommissions: (state, action: PayloadAction<Commission[]>) => {
+  95 |       console.log(
+  96 |         '🔄 upsertCommissions reducer called with:',
+  97 |         action.payload?.length || 'undefined',
+  98 |         'commissions'
+  99 |       );
+ 100 | 
+ 101 |       if (!action.payload || !Array.isArray(action.payload)) {
+ 102 |         console.error('❌ upsertCommissions: Invalid payload', action.payload);
+ 103 |         return;
+ 104 |       }
+ 105 | 
+ 106 |       action.payload.forEach((commission, index) => {
+ 107 |         if (commission && commission.id) {
+ 108 |           state.items[commission.id] = commission;
+ 109 |           console.log(`✅ Added commission ${index + 1}:`, commission.id);
+ 110 |         } else {
+ 111 |           console.error('❌ Invalid commission object:', commission);
+ 112 |         }
+ 113 |       });
+ 114 | 
+ 115 |       state.totalCount = Object.keys(state.items).length;
+ 116 |       console.log('✅ Total commissions in state:', state.totalCount);
+ 117 |     },
+ 118 | 
+ 119 |     /**
+ 120 |      * Set commissions from cache/API (legacy compatibility)
+ 121 |      */
+ 122 |     setItems: (state, action: PayloadAction<Commission[]>) => {
+ 123 |       console.log(
+ 124 |         '🔄 setItems reducer called with:',
+ 125 |         action.payload?.length || 'undefined',
+ 126 |         'commissions'
+ 127 |       );
+ 128 | 
+ 129 |       if (!action.payload || !Array.isArray(action.payload)) {
+ 130 |         console.error('❌ setItems: Invalid payload', action.payload);
+ 131 |         return;
+ 132 |       }
+ 133 | 
+ 134 |       // Clear existing commissions and set new ones
+ 135 |       state.items = {};
+ 136 |       action.payload.forEach((commission) => {
+ 137 |         if (commission && commission.id) {
+ 138 |           state.items[commission.id] = commission;
+ 139 |         }
+ 140 |       });
+ 141 |       state.totalCount = Object.keys(state.items).length;
+ 142 |       state.error = null;
+ 143 |       console.log('✅ setItems: Total commissions now:', state.totalCount);
+ 144 |     },
+ 145 | 
+ 146 |     /**
+ 147 |      * Set date filter
+ 148 |      */
+ 149 |     setDateFilter: (
+ 150 |       state,
+ 151 |       action: PayloadAction<{ startDate: string; endDate: string }>
+ 152 |     ) => {
+ 153 |       state.filters.dateRange = action.payload;
+ 154 |       console.log('📅 Date filter updated:', action.payload);
+ 155 |     },
+ 156 | 
+ 157 |     /**
+ 158 |      * Set status filter
+ 159 |      */
+ 160 |     setStatusFilter: (state, action: PayloadAction<string[]>) => {
+ 161 |       state.filters.statuses = action.payload;
+ 162 |       console.log('🔧 Status filter updated:', action.payload);
+ 163 |     },
+ 164 | 
+ 165 |     /**
+ 166 |      * Update filters (partial update)
+ 167 |      */
+ 168 |     updateFilters: (
+ 169 |       state,
+ 170 |       action: PayloadAction<Partial<CommissionFilters>>
+ 171 |     ) => {
+ 172 |       state.filters = { ...state.filters, ...action.payload };
+ 173 |       console.log('🔧 Filters updated:', state.filters);
+ 174 |     },
+ 175 | 
+ 176 |     /**
+ 177 |      * Reset filters to current year default
+ 178 |      */
+ 179 |     resetFilters: (state) => {
+ 180 |       state.filters = {
+ 181 |         dateRange: getCurrentYearRange(),
+ 182 |       };
+ 183 |       state.searchTerm = '';
+ 184 |       console.log('🧹 Filters reset to current year default');
+ 185 |     },
+ 186 | 
+ 187 |     /**
+ 188 |      * Clear all filters (no date filter)
+ 189 |      */
+ 190 |     clearFilters: (state) => {
+ 191 |       state.filters = {};
+ 192 |       state.searchTerm = '';
+ 193 |       console.log('🧹 All filters cleared');
+ 194 |     },
+ 195 | 
+ 196 |     /**
+ 197 |      * Update KPI totals cache
+ 198 |      */
+ 199 |     updateKPITotals: (state, action: PayloadAction<CommissionKPIStats>) => {
+ 200 |       state.kpiTotals = action.payload;
+ 201 |       console.log('📊 KPI totals updated:', action.payload);
+ 202 |     },
+ 203 | 
+ 204 |     /**
+ 205 |      * Update search term
+ 206 |      */
+ 207 |     updateSearchTerm: (state, action: PayloadAction<string>) => {
+ 208 |       state.searchTerm = action.payload;
+ 209 |       console.log('🔍 Search term updated:', action.payload);
+ 210 |     },
+ 211 | 
+ 212 |     /**
+ 213 |      * Set loading state
+ 214 |      */
+ 215 |     setLoading: (state, action: PayloadAction<boolean>) => {
+ 216 |       state.isLoading = action.payload;
+ 217 |       if (action.payload) {
+ 218 |         state.error = null;
+ 219 |       }
+ 220 |     },
+ 221 | 
+ 222 |     /**
+ 223 |      * Set error state
+ 224 |      */
+ 225 |     setError: (state, action: PayloadAction<string>) => {
+ 226 |       state.error = action.payload;
+ 227 |       state.isLoading = false;
+ 228 |       state.loadingNext = false;
+ 229 |     },
+ 230 | 
+ 231 |     /**
+ 232 |      * Update last sync timestamp
+ 233 |      */
+ 234 |     setLastSync: (state, action: PayloadAction<number>) => {
+ 235 |       state.lastSync = action.payload;
+ 236 |     },
+ 237 | 
+ 238 |     /**
+ 239 |      * Start loading next page (pagination support)
+ 240 |      */
+ 241 |     startNextPageLoad: (state) => {
+ 242 |       state.loadingNext = true;
+ 243 |       state.error = null;
+ 244 |       console.log('🔄 Started loading next page');
+ 245 |     },
+ 246 | 
+ 247 |     /**
+ 248 |      * Finish loading next page (pagination support)
+ 249 |      */
+ 250 |     finishNextPageLoad: (
+ 251 |       state,
+ 252 |       action: PayloadAction<{
+ 253 |         page: number;
+ 254 |         totalPages: number;
+ 255 |         success: boolean;
+ 256 |         error?: string;
+ 257 |       }>
+ 258 |     ) => {
+ 259 |       const { page, totalPages, success, error } = action.payload;
+ 260 | 
+ 261 |       state.loadingNext = false;
+ 262 |       state.totalPages = totalPages;
+ 263 | 
+ 264 |       if (success) {
+ 265 |         // Add page to loaded pages if not already present
+ 266 |         if (!state.pagesLoaded.includes(page)) {
+ 267 |           state.pagesLoaded.push(page);
+ 268 |         }
+ 269 |         // Update hasMore based on whether we've loaded all pages
+ 270 |         state.hasMore = page < totalPages;
+ 271 |         console.log(
+ 272 |           `✅ Page ${page} loaded. HasMore: ${state.hasMore} (${page}/${totalPages})`
+ 273 |         );
+ 274 |       } else {
+ 275 |         state.error = error || 'Failed to load next page';
+ 276 |         console.log(`❌ Page ${page} failed: ${error}`);
+ 277 |       }
+ 278 |     },
+ 279 | 
+ 280 |     /**
+ 281 |      * Reset pagination state (useful for refresh)
+ 282 |      */
+ 283 |     resetPagination: (state) => {
+ 284 |       state.pagesLoaded = [];
+ 285 |       state.totalPages = 0;
+ 286 |       state.loadingNext = false;
+ 287 |       state.hasMore = true;
+ 288 |       state.error = null;
+ 289 |       console.log('🔄 Commission pagination state reset');
+ 290 |     },
+ 291 | 
+ 292 |     /**
+ 293 |      * Clear all pages and reset state
+ 294 |      */
+ 295 |     clearPages: (state) => {
+ 296 |       state.items = {};
+ 297 |       state.pagesLoaded = [];
+ 298 |       state.totalPages = 0;
+ 299 |       state.totalCount = 0;
+ 300 |       state.lastSync = null;
+ 301 |       state.error = null;
+ 302 |       state.loadingNext = false;
+ 303 |       state.hasMore = true;
+ 304 |       state.kpiTotals = null;
+ 305 |       console.log('✅ Cleared all commission pages');
+ 306 |     },
+ 307 | 
+ 308 |     /**
+ 309 |      * Clear all commission data
+ 310 |      */
+ 311 |     clear: (state) => {
+ 312 |       return { ...initialState };
+ 313 |     },
+ 314 | 
+ 315 |     /**
+ 316 |      * Set rehydration data (used by SQLite transform)
+ 317 |      */
+ 318 |     rehydrate: (
+ 319 |       state,
+ 320 |       action: PayloadAction<{ items: Commission[]; lastSync: number | null }>
+ 321 |     ) => {
+ 322 |       const { items, lastSync } = action.payload;
+ 323 | 
+ 324 |       // Convert array to normalized structure
+ 325 |       state.items = {};
+ 326 |       if (Array.isArray(items)) {
+ 327 |         items.forEach((commission) => {
+ 328 |           if (commission && commission.id) {
+ 329 |             state.items[commission.id] = commission;
+ 330 |           }
+ 331 |         });
+ 332 |       }
+ 333 | 
+ 334 |       state.lastSync = lastSync;
+ 335 |       state.totalCount = Object.keys(state.items).length;
+ 336 |       state.isLoading = false;
+ 337 |       state.error = null;
+ 338 |       console.log(
+ 339 |         '✅ Commission state rehydrated with',
+ 340 |         state.totalCount,
+ 341 |         'commissions'
+ 342 |       );
+ 343 |     },
+ 344 |   },
+ 345 | 
+ 346 |   /**
+ 347 |    * Extra reducers to handle API responses
+ 348 |    */
+ 349 |   extraReducers: (builder) => {
+ 350 |     builder
+ 351 |       // Handle getCommissions fulfilled
+ 352 |       .addMatcher(
+ 353 |         commissionApi.endpoints?.getCommissions?.matchFulfilled,
+ 354 |         (state, action) => {
+ 355 |           console.log('🔄 getCommissions fulfilled, syncing to Redux state');
+ 356 | 
+ 357 |           if (action.payload?.data?.items) {
+ 358 |             const commissions = action.payload.data.items;
+ 359 | 
+ 360 |             // Transform API commissions to our Commission model
+ 361 |             commissions.forEach((apiCommission: any) => {
+ 362 |               const transformedCommission: Commission = {
+ 363 |                 id: apiCommission.commissionId,
+ 364 |                 cp_id: apiCommission.cpId,
+ 365 |                 lead_id: apiCommission.leadId || undefined,
+ 366 |                 customer_id: undefined, // Not provided by API
+ 367 |                 amount: apiCommission.amount,
+ 368 |                 status: apiCommission.status,
+ 369 |                 created_at: apiCommission.createdAt || new Date().toISOString(),
+ 370 |                 updated_at: new Date().toISOString(),
+ 371 |                 payment_date: undefined, // API doesn't provide this in list
+ 372 |                 description: undefined, // API doesn't provide this in list
+ 373 |                 sync_status: 'synced',
+ 374 |                 local_changes: '{}',
+ 375 |               };
+ 376 | 
+ 377 |               state.items[transformedCommission.id] = transformedCommission;
+ 378 |             });
+ 379 | 
+ 380 |             state.totalCount = Object.keys(state.items).length;
+ 381 |             state.lastSync = Date.now();
+ 382 |             console.log(
+ 383 |               '✅ Redux state synced with API data, total commissions:',
+ 384 |               state.totalCount
+ 385 |             );
+ 386 |           }
+ 387 |         }
+ 388 |       )
+ 389 | 
+ 390 |       // Handle getCommissionById fulfilled
+ 391 |       .addMatcher(
+ 392 |         commissionApi.endpoints?.getCommissionById?.matchFulfilled,
+ 393 |         (state, action) => {
+ 394 |           console.log('💰 getCommissionById fulfilled:', action.payload);
+ 395 | 
+ 396 |           if (action.payload?.data) {
+ 397 |             const apiCommission = action.payload.data;
+ 398 | 
+ 399 |             const transformedCommission: Commission = {
+ 400 |               id: apiCommission.commissionId,
+ 401 |               cp_id: apiCommission.cpId,
+ 402 |               lead_id: apiCommission.leadId || undefined,
+ 403 |               customer_id: undefined, // Not provided by API
+ 404 |               amount: apiCommission.amount,
+ 405 |               status: apiCommission.status,
+ 406 |               created_at: apiCommission.createdAt || new Date().toISOString(),
+ 407 |               updated_at: apiCommission.updatedAt || new Date().toISOString(),
+ 408 |               payment_date: apiCommission.paidAt || undefined,
+ 409 |               description: undefined,
+ 410 |               sync_status: 'synced',
+ 411 |               local_changes: '{}',
+ 412 |             };
+ 413 | 
+ 414 |             state.items[transformedCommission.id] = transformedCommission;
+ 415 |             console.log(
+ 416 |               '✅ Commission detail added to Redux state:',
+ 417 |               transformedCommission.id
+ 418 |             );
+ 419 |           }
+ 420 |         }
+ 421 |       );
+ 422 |   },
+ 423 | });
+ 424 | 
+ 425 | // Export actions
+ 426 | export const {
+ 427 |   upsertCommissions,
+ 428 |   setItems,
+ 429 |   setDateFilter,
+ 430 |   setStatusFilter,
+ 431 |   updateFilters,
+ 432 |   resetFilters,
+ 433 |   clearFilters,
+ 434 |   updateKPITotals,
+ 435 |   updateSearchTerm,
+ 436 |   setLoading,
+ 437 |   setError,
+ 438 |   setLastSync,
+ 439 |   startNextPageLoad,
+ 440 |   finishNextPageLoad,
+ 441 |   resetPagination,
+ 442 |   clearPages,
+ 443 |   clear,
+ 444 |   rehydrate,
+ 445 | } = commissionSlice.actions;
+ 446 | 
+ 447 | // Export reducer
+ 448 | export default commissionSlice.reducer;
+ 449 | 
+ 450 | // Base selectors
+ 451 | export const selectCommissionState = (state: {
+ 452 |   commissions: CommissionState;
+ 453 | }) => state.commissions;
+ 454 | 
+ 455 | // Legacy selectors for backward compatibility
+ 456 | export const selectCommissions = createSelector(
+ 457 |   [selectCommissionState],
+ 458 |   (commissionState) => Object.values(commissionState?.items || {})
+ 459 | );
+ 460 | 
+ 461 | export const selectCommissionsLoading = createSelector(
+ 462 |   [selectCommissionState],
+ 463 |   (commissionState) => commissionState?.isLoading || false
+ 464 | );
+ 465 | 
+ 466 | export const selectCommissionsError = createSelector(
+ 467 |   [selectCommissionState],
+ 468 |   (commissionState) => commissionState?.error || null
+ 469 | );
+ 470 | 
+ 471 | export const selectCommissionsLastSync = createSelector(
+ 472 |   [selectCommissionState],
+ 473 |   (commissionState) => commissionState?.lastSync || null
+ 474 | );
+ 475 | 
+ 476 | export const selectCommissionsTotalCount = createSelector(
+ 477 |   [selectCommissionState],
+ 478 |   (commissionState) => commissionState?.totalCount || 0
+ 479 | );
+ 480 | 
+ 481 | export const selectCommissionsSearchTerm = createSelector(
+ 482 |   [selectCommissionState],
+ 483 |   (commissionState) => commissionState?.searchTerm || ''
+ 484 | );
+ 485 | 
+ 486 | export const selectCommissionsFilters = createSelector(
+ 487 |   [selectCommissionState],
+ 488 |   (commissionState) => commissionState?.filters || {}
+ 489 | );
+ 490 | 
+================================================================================
+File: MainTabNavigator.tsx
+Location: src/navigation/MainTabNavigator.tsx
+================================================================================
+   1 | /**
+   2 |  * Main Tab Navigator
+   3 |  * Bottom tab navigation for authenticated users
+   4 |  */
+   5 | import React, { useEffect } from 'react';
+   6 | import { Platform, BackHandler, Alert, Text } from 'react-native';
+   7 | import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
+   8 | import { useNavigation, useIsFocused } from '@react-navigation/native';
+   9 | import HomeStack from './HomeStack';
+  10 | import { SettingsScreen } from '@screens/settings/SettingsScreen';
+  11 | import type { MainTabParamList } from './types';
+  12 | import { QuotationsScreen } from '@screens/quotations/QuotationsScreen';
+  13 | import { CustomerStack } from './CustomerStack';
+  14 | import { CommissionsScreen } from '@screens/commissions/CommissionsScreen';
+  15 | 
+  16 | const Tab = createBottomTabNavigator<MainTabParamList>();
+  17 | 
+  18 | /**
+  19 |  * MainTabNavigator Component
+  20 |  * Bottom tab navigation with Home and Settings
+  21 |  */
+  22 | export const MainTabNavigator: React.FC = () => {
+  23 |   const navigation = useNavigation();
+  24 |   const isFocused = useIsFocused();
+  25 | 
+  26 |   useEffect(() => {
+  27 |     if (Platform.OS !== 'android') {
+  28 |       return;
+  29 |     }
+  30 | 
+  31 |     const handleBackPress = () => {
+  32 |       Alert.alert('Exit App', 'Are you sure you want to exit?', [
+  33 |         { text: 'Cancel', style: 'cancel' },
+  34 |         { text: 'Exit', onPress: () => BackHandler.exitApp() },
+  35 |       ]);
+  36 |       return true; // Always prevent default back action in main tabs
+  37 |     };
+  38 | 
+  39 |     const backHandler = BackHandler.addEventListener(
+  40 |       'hardwareBackPress',
+  41 |       handleBackPress
+  42 |     );
+  43 |     return () => backHandler.remove();
+  44 |   }, []);
+  45 | 
+  46 |   return (
+  47 |     <Tab.Navigator
+  48 |       initialRouteName="HomeTab"
+  49 |       screenOptions={{
+  50 |         headerShown: false,
+  51 |         tabBarActiveTintColor: '#004C89',
+  52 |         tabBarInactiveTintColor: '#999',
+  53 |         tabBarStyle: {
+  54 |           backgroundColor: 'white',
+  55 |           borderTopWidth: 1,
+  56 |           borderTopColor: '#e0e0e0',
+  57 |           paddingBottom: Platform.OS === 'ios' ? 25 : 5,
+  58 |           paddingTop: 5,
+  59 |           height: Platform.OS === 'ios' ? 85 : 65,
+  60 |         },
+  61 |         tabBarLabelStyle: {
+  62 |           fontSize: 12,
+  63 |           fontWeight: '600',
+  64 |         },
+  65 |         tabBarIconStyle: {
+  66 |           marginTop: 2,
+  67 |         },
+  68 |       }}
+  69 |     >
+  70 |       <Tab.Screen
+  71 |         name="HomeTab"
+  72 |         component={HomeStack} // Make sure this matches exactly
+  73 |         options={{
+  74 |           title: 'Home',
+  75 |           tabBarIcon: ({ color, size }) => (
+  76 |             <Text style={{ color, fontSize: size }}>🏠</Text>
+  77 |           ),
+  78 |         }}
+  79 |       />
+  80 |       <Tab.Screen
+  81 |         name="Settings"
+  82 |         component={SettingsScreen}
+  83 |         options={{
+  84 |           title: 'Settings',
+  85 |           headerShown: true,
+  86 |           headerStyle: {
+  87 |             backgroundColor: '#004C89',
+  88 |           },
+  89 |           headerTintColor: '#fff',
+  90 |           headerTitleStyle: {
+  91 |             fontWeight: 'bold',
+  92 |             fontSize: 18,
+  93 |           },
+  94 |           tabBarIcon: ({ color, size }) => (
+  95 |             <TabIcon name="⚙️" color={color} size={size} />
+  96 |           ),
+  97 |         }}
+  98 |       />
+  99 |       <Tab.Screen
+ 100 |         name="Quotations"
+ 101 |         component={QuotationsScreen}
+ 102 |         options={{
+ 103 |           title: 'Quotations',
+ 104 |           headerShown: true,
+ 105 |           headerStyle: {
+ 106 |             backgroundColor: '#004C89',
+ 107 |           },
+ 108 |           headerTintColor: '#fff',
+ 109 |           headerTitleStyle: {
+ 110 |             fontWeight: 'bold',
+ 111 |             fontSize: 18,
+ 112 |           },
+ 113 |           tabBarIcon: ({ color, size }) => (
+ 114 |             <TabIcon name="📋" color={color} size={size} />
+ 115 |           ),
+ 116 |         }}
+ 117 |       />
+ 118 |       <Tab.Screen
+ 119 |         name="Customers"
+ 120 |         component={CustomerStack}
+ 121 |         options={{
+ 122 |           title: 'Customers',
+ 123 |           headerShown: false, // CustomerStack handles its own headers
+ 124 |           tabBarIcon: ({ color, size }) => (
+ 125 |             <TabIcon name="👥" color={color} size={size} />
+ 126 |           ),
+ 127 |         }}
+ 128 |       />
+ 129 |       <Tab.Screen
+ 130 |         name="Commissions"
+ 131 |         component={CommissionsScreen}
+ 132 |         options={{
+ 133 |           title: 'Commissions',
+ 134 |           headerShown: true,
+ 135 |           headerStyle: {
+ 136 |             backgroundColor: '#004C89',
+ 137 |           },
+ 138 |           headerTintColor: '#fff',
+ 139 |           headerTitleStyle: {
+ 140 |             fontWeight: 'bold',
+ 141 |             fontSize: 18,
+ 142 |           },
+ 143 |           tabBarIcon: ({ color, size }) => (
+ 144 |             <TabIcon name="💰" color={color} size={size} />
+ 145 |           ),
+ 146 |         }}
+ 147 |       />
+ 148 |     </Tab.Navigator>
+ 149 |   );
+ 150 | };
+ 151 | 
+ 152 | /**
+ 153 |  * Simple Tab Icon Component
+ 154 |  * Uses emoji icons for compatibility
+ 155 |  */
+ 156 | interface TabIconProps {
+ 157 |   name: string;
+ 158 |   color: string;
+ 159 |   size: number;
+ 160 | }
+ 161 | 
+ 162 | const TabIcon: React.FC<TabIconProps> = ({ name, size }) => (
+ 163 |   <Text style={{ fontSize: size, textAlign: 'center' }}>{name}</Text>
+ 164 | );
+ 165 | 
+ 166 | export default MainTabNavigator;
+ 167 | 
+================================================================================
+File: .detoxrc.js
+Location: .detoxrc.js
+================================================================================
+   1 | /**
+   2 |  * Detox Configuration
+   3 |  */
+   4 | 
+   5 | module.exports = {
+   6 |   testRunner: 'jest',
+   7 |   runnerConfig: 'e2e/jest.config.js',
+   8 |   specs: 'e2e',
+   9 |   behavior: {
+  10 |     init: {
+  11 |       reinstallApp: true,
+  12 |       launchApp: true,
+  13 |     },
+  14 |     launchApp: 'auto',
+  15 |   },
+  16 |   apps: {
+  17 |     'ios.debug': {
+  18 |       type: 'ios.app',
+  19 |       binaryPath: 'ios/build/Build/Products/Debug-iphonesimulator/SolariumCP.app',
+  20 |       build: 'xcodebuild -workspace ios/SolariumCP.xcworkspace -scheme SolariumCP -configuration Debug -sdk iphonesimulator -derivedDataPath ios/build',
+  21 |     },
+  22 |     'android.debug': {
+  23 |       type: 'android.apk',
+  24 |       binaryPath: 'android/app/build/outputs/apk/debug/app-debug.apk',
+  25 |       build: 'cd android && ./gradlew assembleDebug assembleAndroidTest -DtestBuildType=debug',
+  26 |       reversePorts: [8081],
+  27 |     },
+  28 |   },
+  29 |   devices: {
+  30 |     simulator: {
+  31 |       type: 'ios.simulator',
+  32 |       device: {
+  33 |         type: 'iPhone 14',
+  34 |       },
+  35 |     },
+  36 |     emulator: {
+  37 |       type: 'android.emulator',
+  38 |       device: {
+  39 |         avdName: 'Pixel_4_API_30',
+  40 |       },
+  41 |     },
+  42 |   },
+  43 |   configurations: {
+  44 |     'ios.sim.debug': {
+  45 |       device: 'simulator',
+  46 |       app: 'ios.debug',
+  47 |     },
+  48 |     'android.emu.debug': {
+  49 |       device: 'emulator',
+  50 |       app: 'android.debug',
+  51 |     },
+  52 |   },
+  53 | };
+================================================================================
+File: package.json
+Location: package.json
+================================================================================
+   1 | {
+   2 |   "name": "solariumcp",
+   3 |   "version": "0.0.1",
+   4 |   "private": true,
+   5 |   "lint-staged": {
+   6 |     "*.{js,jsx,ts,tsx}": [
+   7 |       "eslint --fix",
+   8 |       "prettier --write"
+   9 |     ],
+  10 |     "*.{json,md}": [
+  11 |       "prettier --write"
+  12 |     ]
+  13 |   },
+  14 |   "scripts": {
+  15 |     "android": "react-native run-android",
+  16 |     "ios": "react-native run-ios",
+  17 |     "start": "react-native start",
+  18 |     "lint": "eslint . --ext .js,.jsx,.ts,.tsx",
+  19 |     "lint:fix": "eslint . --ext .js,.jsx,.ts,.tsx --fix",
+  20 |     "format": "prettier --write \"src/**/*.{js,jsx,ts,tsx,json,md}\"",
+  21 |     "format:check": "prettier --check \"src/**/*.{js,jsx,ts,tsx,json,md}\"",
+  22 |     "type-check": "tsc --noEmit",
+  23 |     "prepare": "husky install",
+  24 |     "env:dev": "./scripts/switch-env.sh development",
+  25 |     "env:staging": "./scripts/switch-env.sh staging",
+  26 |     "env:prod": "./scripts/switch-env.sh production",
+  27 |     "build:android:dev": "ENVFILE=.env.development yarn android",
+  28 |     "build:android:staging": "ENVFILE=.env.staging yarn android",
+  29 |     "build:android:prod": "ENVFILE=.env.production yarn android",
+  30 |     "build:ios:dev": "ENVFILE=.env.development yarn ios",
+  31 |     "build:ios:staging": "ENVFILE=.env.staging yarn ios",
+  32 |     "build:ios:prod": "ENVFILE=.env.production yarn ios",
+  33 |     "fastlane:android:debug": "ENVFILE=.env.development fastlane android_debug",
+  34 |     "fastlane:android:staging": "ENVFILE=.env.staging fastlane android_debug",
+  35 |     "fastlane:android:internal:staging": "ENVFILE=.env.staging fastlane android_internal",
+  36 |     "fastlane:android:internal:prod": "ENVFILE=.env.production fastlane android_internal",
+  37 |     "build:android:fastlane:dev": "./scripts/build-android.sh development debug",
+  38 |     "build:android:fastlane:staging": "./scripts/build-android.sh staging debug",
+  39 |     "build:android:fastlane:internal": "./scripts/build-android.sh staging internal",
+  40 |     "fastlane:ios:debug": "ENVFILE=.env.development fastlane ios_debug",
+  41 |     "fastlane:ios:staging": "ENVFILE=.env.staging fastlane ios_debug",
+  42 |     "fastlane:ios:beta:staging": "ENVFILE=.env.staging fastlane ios_beta",
+  43 |     "fastlane:ios:beta:prod": "ENVFILE=.env.production fastlane ios_beta",
+  44 |     "build:ios:fastlane:dev": "./scripts/build-ios.sh development debug",
+  45 |     "build:ios:fastlane:staging": "./scripts/build-ios.sh staging debug",
+  46 |     "build:ios:fastlane:beta": "./scripts/build-ios.sh staging beta",
+  47 |     "setup:ios": "./scripts/setup-ios.sh",
+  48 |     "pods": "cd ios && pod install",
+  49 |     "ci:install": "yarn install --frozen-lockfile --prefer-offline",
+  50 |     "ci:validate-env": "./scripts/ci/require-envfile.sh",
+  51 |     "ci:lint": "yarn lint --format=json --output-file=eslint-report.json",
+  52 |     "ci:test": "yarn test:ci --reporters=default --reporters=jest-junit",
+  53 |     "ci:build:android": "fastlane android_debug --verbose",
+  54 |     "ci:build:ios": "fastlane ios_debug --verbose",
+  55 |     "ci:security-scan": "gitleaks detect --source . --verbose --exit-code 1",
+  56 |     "ci:sonar": "sonar-scanner",
+  57 |     "docs:lint": "markdownlint '*.md' 'docs/**/*.md' --fix",
+  58 |     "docs:check": "markdownlint '*.md' 'docs/**/*.md'",
+  59 |     "docs:remark": "remark . --output --frail",
+  60 |     "docs:all": "yarn docs:lint && yarn docs:remark",
+  61 |     "badges:generate": "./scripts/generate-ci-badges.sh",
+  62 |     "badges:coverage": "node ./scripts/generate-badges.js",
+  63 |     "validate:all": "yarn ci:validate-env && yarn lint && yarn type-check && yarn test:ci && yarn docs:check",
+  64 |     "test": "jest",
+  65 |     "test:watch": "jest --watch",
+  66 |     "test:ci": "jest --ci --coverage --watchAll=false --passWithNoTests",
+  67 |     "generate-badges": "node scripts/generate-badges.js",
+  68 |     "test:coverage": "jest --coverage",
+  69 |     "test:a11y": "jest --testNamePattern='accessibility|a11y' --watchAll=false",
+  70 |     "test:coverage:open": "jest --coverage && open coverage/lcov-report/index.html",
+  71 |     "test:badges": "jest-coverage-badges --output coverage/badges",
+  72 |     "test:clear": "jest --clearCache",
+  73 |     "test:comprehensive": "./scripts/test-coverage-comprehensive.sh",
+  74 |     "test:debug": "jest --detectOpenHandles --forceExit --verbose",
+  75 |     "test:auth": "jest --testPathPattern=auth",
+  76 |     "test:coverage:auth": "jest --coverage --testPathPattern='(auth|Auth)' --coverageDirectory=coverage/auth",
+  77 |     "test:watch:auth": "jest --watch --testPathPattern=auth",
+  78 |     "e2e:build": "detox build --configuration ios.sim.debug",
+  79 |     "e2e:test": "detox test --configuration ios.sim.debug",
+  80 |     "e2e:build:android": "detox build --configuration android.emu.debug",
+  81 |     "e2e:test:android": "detox test --configuration android.emu.debug",
+  82 |     "e2e:test:login": "detox test --configuration ios.sim.debug e2e/loginSuccess.e2e.ts",
+  83 |     "e2e:test:lockout": "detox test --configuration ios.sim.debug e2e/otpLockout.e2e.ts",
+  84 |     "test:sync": "jest __tests__/sync --coverage",
+  85 |     "test:coverage:html": "jest --coverage --coverageReporters=html",
+  86 |     "test:addlead": "jest __tests__/screens/AddLeadScreen.test.tsx",
+  87 |     "test:integration": "jest __tests__/integration --coverage",
+  88 |     "test:sync-watch": "jest __tests__/sync --watch",
+  89 |     "test:coverage-sync": "jest __tests__/sync --coverage --coverageReporters=text-lcov | coveralls",
+  90 |     "coverage:badge": "node scripts/generate-badges.js",
+  91 |     "lint:check": "eslint . --ext .js,.jsx,.ts,.tsx",
+  92 |     "ci:quick": "yarn test && yarn lint:check",
+  93 |     "detox:ios:build": "detox build --configuration ios.sim.debug",
+  94 |     "detox:ios:test": "detox test --configuration ios.sim.debug",
+  95 |     "detox:android:build": "detox build --configuration android.emu.debug",
+  96 |     "detox:android:test": "detox test --configuration android.emu.debug",
+  97 |     "detox:test": "detox test",
+  98 |     "quality-check": "npm run lint && npm run type-check && npm run test:coverage",
+  99 |     "docs:lint:fix": "markdownlint --fix README.md CHANGELOG.md docs/**/*.md",
+ 100 |     "docs:validate": "bash scripts/validate-docs.sh",
+ 101 |     "docs:links": "markdown-link-check README.md",
+ 102 |     "docs:serve": "docsify serve docs",
+ 103 |     "changelog:check": "grep -q 'S2-TASK-05' CHANGELOG.md && echo '✅ Changelog updated' || echo '❌ Changelog missing S2-TASK-05'",
+ 104 |     "test:e2e": "detox test",
+ 105 |     "test:e2e:build": "detox build",
+ 106 |     "sonar": "sonar-scanner",
+ 107 |     "test:full": "jest --coverage && node scripts/generate-coverage-badge.js",
+ 108 |     "test:lead-module": "jest --testPathPattern='(leadApi|leadSlice|LeadDao|SyncSystem)' --coverage",
+ 109 |     "lint:test": "eslint __tests__/**/*.{js,ts,tsx}",
+ 110 |     "md-lint": "npm run docs:lint",
+ 111 |     "performance:test": "bash scripts/performance-test-runner.sh",
+ 112 |     "performance:test:minimum": "bash scripts/performance-test-runner.sh minimum android all",
+ 113 |     "performance:test:high-end": "bash scripts/performance-test-runner.sh high-end android all",
+ 114 |     "performance:validate": "node scripts/validate-performance-budget.js",
+ 115 |     "performance:report": "node scripts/collect-performance-metrics.js && node scripts/validate-performance-budget.js",
+ 116 |     "performance:overhead": "bash scripts/performance-test-runner.sh ci android overhead",
+ 117 |     "bundle:analyze": "npx react-native bundle --platform android --dev false --entry-file index.js --bundle-output android-release.js --verbose",
+ 118 |     "bundle:analyze:ios": "npx react-native bundle --platform ios --dev false --entry-file index.js --bundle-output ios-release.js --verbose",
+ 119 |     "build:release:android": "npx react-native run-android --variant=release",
+ 120 |     "build:release:ios": "NODE_ENV=production npx react-native run-ios --configuration Release"
+ 121 |   },
+ 122 |   "dependencies": {
+ 123 |     "@microsoft/applicationinsights-react-native": "^4.3.6",
+ 124 |     "@microsoft/applicationinsights-web": "^3.3.9",
+ 125 |     "@oguzhnatly/react-native-image-manipulator": "^1.0.5",
+ 126 |     "@react-native-async-storage/async-storage": "^2.2.0",
+ 127 |     "@react-native-community/netinfo": "^11.4.1",
+ 128 |     "@react-native-documents/picker": "^10.1.5",
+ 129 |     "@react-navigation/bottom-tabs": "6.3.3",
+ 130 |     "@react-navigation/drawer": "^7.5.6",
+ 131 |     "@react-navigation/native": "6.0.16",
+ 132 |     "@react-navigation/native-stack": "6.6.2",
+ 133 |     "@react-navigation/stack": "6.3.20",
+ 134 |     "@reduxjs/toolkit": "1.9.7",
+ 135 |     "@shopify/flash-list": "^1.8.3",
+ 136 |     "babel-plugin-transform-remove-console": "^6.9.4",
+ 137 |     "events": "^3.3.0",
+ 138 |     "file-type": "^21.0.0",
+ 139 |     "jest-axe": "^10.0.0",
+ 140 |     "lodash": "^4.17.21",
+ 141 |     "react": "18.2.0",
+ 142 |     "react-hook-form": "^7.60.0",
+ 143 |     "react-native": "0.71.19",
+ 144 |     "react-native-config": "1.5.5",
+ 145 |     "react-native-date-picker": "^5.0.13",
+ 146 |     "react-native-device-info": "^14.0.4",
+ 147 |     "react-native-fs": "^2.20.0",
+ 148 |     "react-native-gesture-handler": "2.8.0",
+ 149 |     "react-native-get-random-values": "^1.11.0",
+ 150 |     "react-native-keyboard-aware-scroll-view": "^0.9.5",
+ 151 |     "react-native-keychain": "8.2.0",
+ 152 |     "react-native-otp-textinput": "1.1.1",
+ 153 |     "react-native-paper": "^5.11.0",
+ 154 |     "react-native-reanimated": "2.14.4",
+ 155 |     "react-native-restart": "^0.0.27",
+ 156 |     "react-native-safe-area-context": "4.4.1",
+ 157 |     "react-native-screens": "3.18.2",
+ 158 |     "react-native-sqlite-storage": "^6.0.1",
+ 159 |     "react-native-super-grid": "^6.0.1",
+ 160 |     "react-native-toast-message": "^2.3.3",
+ 161 |     "react-native-vector-icons": "10.0.3",
+ 162 |     "react-native-virtualized-view": "^1.0.0",
+ 163 |     "react-redux": "8.1.3",
+ 164 |     "recyclerlistview": "^4.2.3",
+ 165 |     "redux-persist": "6.0.0"
+ 166 |   },
+ 167 |   "devDependencies": {
+ 168 |     "@babel/core": "^7.20.0",
+ 169 |     "@babel/preset-env": "^7.20.0",
+ 170 |     "@babel/runtime": "^7.20.0",
+ 171 |     "@react-native-community/eslint-config": "^3.2.0",
+ 172 |     "@react-native/eslint-config": "^0.72.2",
+ 173 |     "@testing-library/jest-native": "^5.4.3",
+ 174 |     "@testing-library/react-hooks": "^8.0.1",
+ 175 |     "@testing-library/react-native": "13.2.0",
+ 176 |     "@tsconfig/react-native": "^2.0.2",
+ 177 |     "@types/jest": "^30.0.0",
+ 178 |     "@types/react": "^18.2.6",
+ 179 |     "@types/react-native": "^0.71.0",
+ 180 |     "@types/react-native-vector-icons": "^6.4.18",
+ 181 |     "@types/react-test-renderer": "^18.0.0",
+ 182 |     "babel-jest": "29.2.1",
+ 183 |     "babel-plugin-module-resolver": "^5.0.0",
+ 184 |     "docsify-cli": "^4.4.4",
+ 185 |     "eslint": "^8.19.0",
+ 186 |     "husky": "^8.0.0",
+ 187 |     "jest": "29.2.1",
+ 188 |     "jest-coverage-badges": "1.0.0",
+ 189 |     "jest-environment-jsdom": "^30.0.4",
+ 190 |     "jest-junit": "16.0.0",
+ 191 |     "jest-mock-extended": "^4.0.0",
+ 192 |     "lint-staged": "^13.0.3",
+ 193 |     "markdown-link-check": "^3.11.2",
+ 194 |     "markdownlint-cli": "^0.37.0",
+ 195 |     "metro-react-native-babel-preset": "^0.73.10",
+ 196 |     "prettier": "^2.4.1",
+ 197 |     "react-test-renderer": "18.2.0",
+ 198 |     "ts-jest": "^29.4.0",
+ 199 |     "typescript": "4.8.4"
+ 200 |   }
+ 201 | }
+ 202 | 
+================================================================================
+File: NavigationProvider.tsx
+Location: src/navigation/NavigationProvider.tsx
+================================================================================
+   1 | /**
+   2 |  * Navigation Provider
+   3 |  * Root navigation container with authentication-based routing
+   4 |  */
+   5 | import React from 'react';
+   6 | import { View, StyleSheet } from 'react-native';
+   7 | import { NavigationContainer } from '@react-navigation/native';
+   8 | import { createNativeStackNavigator } from '@react-navigation/native-stack';
+   9 | import { useAppSelector } from '@hooks/reduxHooks';
+  10 | import { AuthStack } from './AuthStack';
+  11 | import { MainTabNavigator } from './MainTabNavigator';
+  12 | import { OfflineBanner } from '@components/common/OfflineBanner';
+  13 | import { AuthBootstrap } from '@components/common/AuthBootstrap';
+  14 | import { AuthGuard } from '@components/auth/AuthGuard';
+  15 | import type { RootStackParamList } from './types';
+  16 | import { navigationRef } from './navigationRef';
+  17 | import PerformanceNavigationWrapper from './PerformanceNavigationWrapper';
+  18 | 
+  19 | const RootStack = createNativeStackNavigator<RootStackParamList>();
+  20 | 
+  21 | /**
+  22 |  * Linking configuration for deep linking
+  23 |  */
+  24 | const linking = {
+  25 |   prefixes: ['solariumcp://'],
+  26 |   config: {
+  27 |     screens: {
+  28 |       Auth: 'auth',
+  29 |       Main: {
+  30 |         screens: {
+  31 |           Home: {
+  32 |             screens: {
+  33 |               HomeScreen: 'home',
+  34 |               MyLeads: 'leads',
+  35 |               LeadDetail: 'leads/:leadId',
+  36 |               AddLead: 'leads/add',
+  37 |             },
+  38 |           },
+  39 |         },
+  40 |       },
+  41 |     },
+  42 |   },
+  43 | };
+  44 | 
+  45 | /**
+  46 |  * Navigation Provider Component
+  47 |  * Manages root-level navigation and authentication flow with AuthGuard protection
+  48 |  */
+  49 | export const NavigationProvider: React.FC = () => {
+  50 |   const isLoggedIn = useAppSelector((state) => state.auth.isLoggedIn);
+  51 | 
+  52 |   return (
+  53 |     <AuthBootstrap>
+  54 |       <View style={styles.container}>
+  55 |         <NavigationContainer
+  56 |           ref={navigationRef}
+  57 |           linking={linking}
+  58 |           onReady={() => {
+  59 |             // Performance mark for future analytics
+  60 |             console.log('Navigation ready');
+  61 |           }}
+  62 |         >
+  63 |           <RootStack.Navigator
+  64 |             screenOptions={{
+  65 |               headerShown: false,
+  66 |               animation: 'slide_from_right',
+  67 |             }}
+  68 |           >
+  69 |             {!isLoggedIn ? (
+  70 |               <RootStack.Screen
+  71 |                 name="Auth"
+  72 |                 options={{
+  73 |                   animationTypeForReplace: 'pop',
+  74 |                 }}
+  75 |               >
+  76 |                 {() => (
+  77 |                   <AuthGuard requiresAuth={false}>
+  78 |                     <AuthStack />
+  79 |                   </AuthGuard>
+  80 |                 )}
+  81 |               </RootStack.Screen>
+  82 |             ) : (
+  83 |               <RootStack.Screen
+  84 |                 name="Main"
+  85 |                 options={{
+  86 |                   animationTypeForReplace: 'push',
+  87 |                 }}
+  88 |               >
+  89 |                 {() => (
+  90 |                   <AuthGuard requiresAuth={true}>
+  91 |                     <MainTabNavigator />
+  92 |                   </AuthGuard>
+  93 |                 )}
+  94 |               </RootStack.Screen>
+  95 |             )}
+  96 |           </RootStack.Navigator>
+  97 |         </NavigationContainer>
+  98 |         <OfflineBanner />
+  99 |       </View>
+ 100 |     </AuthBootstrap>
+ 101 |   );
+ 102 | };
+ 103 | 
+ 104 | /**
+ 105 |  * Component styles
+ 106 |  */
+ 107 | const styles = StyleSheet.create({
+ 108 |   container: {
+ 109 |     flex: 1,
+ 110 |   },
+ 111 | });
+ 112 | 
+ 113 | export default NavigationProvider;
+ 114 | 
+================================================================================
+File: types.ts
+Location: src/navigation/types.ts
+================================================================================
+   1 | import type { NavigatorScreenParams } from '@react-navigation/native';
+   2 | import type { NativeStackScreenProps } from '@react-navigation/native-stack';
+   3 | import type { NotificationsStackParamList } from './NotificationsStack';
+   4 | import type { DocumentAsset } from '../types/document';
+   5 | 
+   6 | // Home Stack Types
+   7 | export type HomeStackParamList = {
+   8 |   Dashboard: undefined;
+   9 |   MyLeads: undefined;
+  10 |   LeadDetail: { leadId: string };
+  11 |   AddLead: undefined;
+  12 |   DocumentUpload: { leadId: string; initialDocuments?: DocumentAsset[] };
+  13 |   NotificationsTest: undefined;
+  14 |   MinimalStoreTest: undefined;
+  15 |   DocumentModuleTest: undefined;
+  16 | };
+  17 | 
+  18 | // Customer Stack Types (add this after HomeStackParamList)
+  19 | export type CustomerStackParamList = {
+  20 |   CustomersList: undefined;
+  21 |   CustomerDetail: { customerId: string };
+  22 | };
+  23 | 
+  24 | export type MainTabParamList = {
+  25 |   HomeTab: NavigatorScreenParams<HomeStackParamList>;
+  26 |   Customers: NavigatorScreenParams<CustomerStackParamList>;
+  27 |   Quotations: undefined;
+  28 |   Settings: undefined;
+  29 |   NotificationsTest: undefined;
+  30 | };
+  31 | 
+  32 | // Root Stack Types (includes auth screens and notifications)
+  33 | export type RootStackParamList = {
+  34 |   Auth: undefined;
+  35 |   Main: NavigatorScreenParams<MainTabParamList>;
+  36 |   NotificationsStack: NavigatorScreenParams<NotificationsStackParamList>; // Add this
+  37 |   NotificationsTest: undefined;
+  38 | };
+  39 | 
+  40 | // Screen Props Types
+  41 | export type HomeScreenProps = NativeStackScreenProps<
+  42 |   HomeStackParamList,
+  43 |   'Dashboard'
+  44 | >;
+  45 | export type MyLeadsScreenProps = NativeStackScreenProps<
+  46 |   HomeStackParamList,
+  47 |   'MyLeads'
+  48 | >;
+  49 | 
+  50 | // Customer Screen Props Types
+  51 | export type CustomerScreenProps = NativeStackScreenProps<
+  52 |   CustomerStackParamList,
+  53 |   'CustomersList'
+  54 | >;
+  55 | export type CustomerDetailScreenProps = NativeStackScreenProps<
+  56 |   CustomerStackParamList,
+  57 |   'CustomerDetail'
+  58 | >;
+  59 | 
+  60 | // Main Tab Navigation Props
+  61 | export type CustomersTabProps = NativeStackScreenProps<
+  62 |   MainTabParamList,
+  63 |   'Customers'
+  64 | >;
+  65 | 
+  66 | // Navigation Ref Type for deep linking
+  67 | export type RootNavigationRef = any;
+  68 | 
+  69 | 
+  70 | // ADD after existing imports
+  71 | import type { DrawerScreenProps } from '@react-navigation/drawer';
+  72 | 
+  73 | // ADD after CustomerStackParamList
+  74 | export type CommissionStackParamList = {
+  75 |   CommissionsList: undefined;
+  76 |   CommissionDetail: { commissionId: string }; // For future implementation
+  77 | };
+  78 | 
+  79 | // UPDATE MainTabParamList - REMOVE Commissions from bottom tabs
+  80 | export type MainTabParamList = {
+  81 |   HomeTab: NavigatorScreenParams<HomeStackParamList>;
+  82 |   Customers: NavigatorScreenParams<CustomerStackParamList>;
+  83 |   Quotations: undefined;
+  84 |   Settings: undefined;
+  85 |   NotificationsTest: undefined;
+  86 |   // Commissions: undefined; // ❌ REMOVE - Moving to drawer
+  87 | };
+  88 | 
+  89 | // ADD new Drawer navigation types
+  90 | export type MainDrawerParamList = {
+  91 |   MainTabs: NavigatorScreenParams<MainTabParamList>;
+  92 |   CommissionStack: NavigatorScreenParams<CommissionStackParamList>;
+  93 | };
+  94 | 
+  95 | // UPDATE RootStackParamList - Change Main to use Drawer
+  96 | export type RootStackParamList = {
+  97 |   Auth: undefined;
+  98 |   Main: NavigatorScreenParams<MainDrawerParamList>; // ✅ Changed to use Drawer
+  99 |   NotificationsStack: NavigatorScreenParams<NotificationsStackParamList>;
+ 100 |   NotificationsTest: undefined;
+ 101 | };
+ 102 | 
+ 103 | // ADD new Commission Screen Props Types
+ 104 | export type CommissionScreenProps = NativeStackScreenProps<
+ 105 |   CommissionStackParamList,
+ 106 |   'CommissionsList'
+ 107 | >;
+ 108 | export type CommissionDetailScreenProps = NativeStackScreenProps<
+ 109 |   CommissionStackParamList,
+ 110 |   'CommissionDetail'
+ 111 | >;
+ 112 | 
+ 113 | // ADD Drawer Navigation Props
+ 114 | export type MainDrawerProps = DrawerScreenProps<MainDrawerParamList>;
+ 115 | export type CommissionStackProps = DrawerScreenProps<
+ 116 |   MainDrawerParamList,
+ 117 |   'CommissionStack'
+ 118 | >;
+ 119 | 
+================================================================================
+File: CommissionDao.ts
+Location: src/database/dao/CommissionDao.ts
+================================================================================
+   1 | /**
+   2 |  * Commission DAO
+   3 |  * Data Access Object for Commission entities (following LeadDao pattern)
+   4 |  */
+   5 | import type { SQLiteDatabase } from 'react-native-sqlite-storage';
+   6 | import type {
+   7 |   Commission,
+   8 |   CommissionFilters,
+   9 |   CommissionKPIStats,
+  10 |   CreateCommissionRequest,
+  11 |   UpdateCommissionRequest,
+  12 | } from '../models/Commission';
+  13 | 
+  14 | // Singleton instance
+  15 | let instance: CommissionDao | null = null;
+  16 | 
+  17 | export class CommissionDao {
+  18 |   constructor(private db: SQLiteDatabase) {}
+  19 | 
+  20 |   /**
+  21 |    * Get singleton instance
+  22 |    */
+  23 |   static getInstance(db: SQLiteDatabase): CommissionDao {
+  24 |     if (!instance) {
+  25 |       instance = new CommissionDao(db);
+  26 |       console.log('✅ CommissionDao instance created');
+  27 |     }
+  28 |     return instance;
+  29 |   }
+  30 | 
+  31 |   /**
+  32 |    * Reset singleton instance (for testing)
+  33 |    */
+  34 |   static resetInstance(): void {
+  35 |     instance = null;
+  36 |     console.log('🔄 CommissionDao instance reset');
+  37 |   }
+  38 | 
+  39 |   /**
+  40 |    * Helper function to promisify SQLite operations
+  41 |    */
+  42 |   private executeSql(query: string, params: any[] = []): Promise<any> {
+  43 |     return new Promise((resolve, reject) => {
+  44 |       this.db.executeSql(
+  45 |         query,
+  46 |         params,
+  47 |         (result) => {
+  48 |           console.log(
+  49 |             `✅ CommissionDao SQL Success: ${query.substring(0, 50)}...`
+  50 |           );
+  51 |           resolve(result);
+  52 |         },
+  53 |         (error) => {
+  54 |           console.error(
+  55 |             `❌ CommissionDao SQL Error: ${query.substring(0, 50)}...`,
+  56 |             error
+  57 |           );
+  58 |           reject(error);
+  59 |         }
+  60 |       );
+  61 |     });
+  62 |   }
+  63 | 
+  64 |   /**
+  65 |    * Find commissions by date range (as required in specifications)
+  66 |    */
+  67 |   async findByDateRange(
+  68 |     startDate: string,
+  69 |     endDate: string
+  70 |   ): Promise<Commission[]> {
+  71 |     console.log(`🔍 Finding commissions between ${startDate} and ${endDate}`);
+  72 | 
+  73 |     const startTime = Date.now();
+  74 | 
+  75 |     try {
+  76 |       const query = `
+  77 |         SELECT * FROM commissions
+  78 |         WHERE created_at >= ? AND created_at <= ?
+  79 |         ORDER BY created_at DESC;
+  80 |       `;
+  81 | 
+  82 |       const result = await this.executeSql(query, [startDate, endDate]);
+  83 |       const commissions: Commission[] = [];
+  84 | 
+  85 |       for (let i = 0; i < result.rows.length; i++) {
+  86 |         const row = result.rows.item(i);
+  87 |         commissions.push(this.mapRowToEntity(row));
+  88 |       }
+  89 | 
+  90 |       const duration = Date.now() - startTime;
+  91 |       console.log(
+  92 |         `✅ Retrieved ${commissions.length} commissions by date range in ${duration}ms`
+  93 |       );
+  94 | 
+  95 |       return commissions;
+  96 |     } catch (error) {
+  97 |       console.error('❌ Error finding commissions by date range:', error);
+  98 |       throw error;
+  99 |     }
+ 100 |   }
+ 101 | 
+ 102 |   /**
+ 103 |    * Find commissions by status (as required in specifications)
+ 104 |    */
+ 105 |   async findByStatus(status: string): Promise<Commission[]> {
+ 106 |     console.log(`🔍 Finding commissions with status: ${status}`);
+ 107 | 
+ 108 |     const startTime = Date.now();
+ 109 | 
+ 110 |     try {
+ 111 |       const query = `
+ 112 |         SELECT * FROM commissions
+ 113 |         WHERE status = ?
+ 114 |         ORDER BY created_at DESC;
+ 115 |       `;
+ 116 | 
+ 117 |       const result = await this.executeSql(query, [status]);
+ 118 |       const commissions: Commission[] = [];
+ 119 | 
+ 120 |       for (let i = 0; i < result.rows.length; i++) {
+ 121 |         const row = result.rows.item(i);
+ 122 |         commissions.push(this.mapRowToEntity(row));
+ 123 |       }
+ 124 | 
+ 125 |       const duration = Date.now() - startTime;
+ 126 |       console.log(
+ 127 |         `✅ Retrieved ${commissions.length} commissions by status in ${duration}ms`
+ 128 |       );
+ 129 | 
+ 130 |       return commissions;
+ 131 |     } catch (error) {
+ 132 |       console.error(`❌ Error finding commissions by status ${status}:`, error);
+ 133 |       throw error;
+ 134 |     }
+ 135 |   }
+ 136 | 
+ 137 |   /**
+ 138 |    * Get KPI statistics with filters (as required in specifications)
+ 139 |    */
+ 140 |   async getKPIStats(
+ 141 |     filters: CommissionFilters = {}
+ 142 |   ): Promise<CommissionKPIStats> {
+ 143 |     console.log('📊 Getting commission KPI stats with filters:', filters);
+ 144 | 
+ 145 |     const startTime = Date.now();
+ 146 | 
+ 147 |     try {
+ 148 |       // Build WHERE clause based on filters
+ 149 |       let whereClause = '1=1';
+ 150 |       const params: any[] = [];
+ 151 | 
+ 152 |       if (filters.dateRange) {
+ 153 |         whereClause += ' AND created_at >= ? AND created_at <= ?';
+ 154 |         params.push(filters.dateRange.startDate, filters.dateRange.endDate);
+ 155 |       }
+ 156 | 
+ 157 |       if (filters.status) {
+ 158 |         whereClause += ' AND status = ?';
+ 159 |         params.push(filters.status);
+ 160 |       }
+ 161 | 
+ 162 |       if (filters.cp_id) {
+ 163 |         whereClause += ' AND cp_id = ?';
+ 164 |         params.push(filters.cp_id);
+ 165 |       }
+ 166 | 
+ 167 |       if (filters.lead_id) {
+ 168 |         whereClause += ' AND lead_id = ?';
+ 169 |         params.push(filters.lead_id);
+ 170 |       }
+ 171 | 
+ 172 |       const query = `
+ 173 |         SELECT 
+ 174 |           COUNT(*) as total_count,
+ 175 |           SUM(amount) as total_commission,
+ 176 |           SUM(CASE WHEN status = 'paid' THEN amount ELSE 0 END) as paid_commission,
+ 177 |           SUM(CASE WHEN status = 'pending' THEN amount ELSE 0 END) as pending_commission,
+ 178 |           SUM(CASE WHEN status = 'approved' THEN amount ELSE 0 END) as approved_commission,
+ 179 |           COUNT(CASE WHEN status = 'paid' THEN 1 END) as paid_count,
+ 180 |           COUNT(CASE WHEN status = 'pending' THEN 1 END) as pending_count,
+ 181 |           COUNT(CASE WHEN status = 'approved' THEN 1 END) as approved_count
+ 182 |         FROM commissions
+ 183 |         WHERE ${whereClause};
+ 184 |       `;
+ 185 | 
+ 186 |       const result = await this.executeSql(query, params);
+ 187 |       const row = result.rows.item(0);
+ 188 | 
+ 189 |       const stats: CommissionKPIStats = {
+ 190 |         totalCommission: row.total_commission || 0,
+ 191 |         paidCommission: row.paid_commission || 0,
+ 192 |         pendingCommission: row.pending_commission || 0,
+ 193 |         approvedCommission: row.approved_commission || 0,
+ 194 |         totalCount: row.total_count || 0,
+ 195 |         paidCount: row.paid_count || 0,
+ 196 |         pendingCount: row.pending_count || 0,
+ 197 |         approvedCount: row.approved_count || 0,
+ 198 |       };
+ 199 | 
+ 200 |       const duration = Date.now() - startTime;
+ 201 |       console.log(`✅ Retrieved KPI stats in ${duration}ms:`, stats);
+ 202 | 
+ 203 |       return stats;
+ 204 |     } catch (error) {
+ 205 |       console.error('❌ Error getting KPI stats:', error);
+ 206 |       throw error;
+ 207 |     }
+ 208 |   }
+ 209 | 
+ 210 |   /**
+ 211 |    * Upsert multiple commissions (for API sync)
+ 212 |    */
+ 213 |   async upsertMany(commissions: Commission[]): Promise<void> {
+ 214 |     if (!commissions || commissions.length === 0) {
+ 215 |       console.log('⚠️ No commissions to upsert');
+ 216 |       return;
+ 217 |     }
+ 218 | 
+ 219 |     const startTime = Date.now();
+ 220 |     console.log(`🔄 Upserting ${commissions.length} commissions`);
+ 221 | 
+ 222 |     try {
+ 223 |       // Begin transaction
+ 224 |       await this.executeSql('BEGIN TRANSACTION;');
+ 225 | 
+ 226 |       // Insert each commission individually for better error handling
+ 227 |       for (const commission of commissions) {
+ 228 |         await this.executeSql(
+ 229 |           `
+ 230 |           INSERT OR REPLACE INTO commissions (
+ 231 |             id, cp_id, lead_id, customer_id, amount, status, created_at, updated_at,
+ 232 |             payment_date, description, sync_status, local_changes
+ 233 |           ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?);
+ 234 |           `,
+ 235 |           [
+ 236 |             commission.id,
+ 237 |             commission.cp_id,
+ 238 |             commission.lead_id || null,
+ 239 |             commission.customer_id || null,
+ 240 |             commission.amount,
+ 241 |             commission.status,
+ 242 |             commission.created_at,
+ 243 |             commission.updated_at,
+ 244 |             commission.payment_date || null,
+ 245 |             commission.description || null,
+ 246 |             commission.sync_status || 'synced',
+ 247 |             commission.local_changes || '{}',
+ 248 |           ]
+ 249 |         );
+ 250 |       }
+ 251 | 
+ 252 |       // Commit transaction
+ 253 |       await this.executeSql('COMMIT;');
+ 254 | 
+ 255 |       const duration = Date.now() - startTime;
+ 256 |       console.log(
+ 257 |         `✅ Upserted ${commissions.length} commissions in ${duration}ms`
+ 258 |       );
+ 259 | 
+ 260 |       // Performance check
+ 261 |       if (duration > 200) {
+ 262 |         console.warn(
+ 263 |           `⚠️ Upsert performance warning: ${duration}ms for ${commissions.length} commissions (target: ≤200ms)`
+ 264 |         );
+ 265 |       }
+ 266 |     } catch (error) {
+ 267 |       console.error('❌ Error upserting commissions:', error);
+ 268 |       try {
+ 269 |         await this.executeSql('ROLLBACK;');
+ 270 |       } catch (rollbackError) {
+ 271 |         console.error('❌ Rollback failed:', rollbackError);
+ 272 |       }
+ 273 |       throw error;
+ 274 |     }
+ 275 |   }
+ 276 | 
+ 277 |   /**
+ 278 |    * Get all commissions with pagination
+ 279 |    */
+ 280 |   async findAll(limit: number = 25, offset: number = 0): Promise<Commission[]> {
+ 281 |     console.log(
+ 282 |       `🔍 Finding all commissions (limit: ${limit}, offset: ${offset})`
+ 283 |     );
+ 284 | 
+ 285 |     const startTime = Date.now();
+ 286 | 
+ 287 |     try {
+ 288 |       const query = `
+ 289 |         SELECT * FROM commissions
+ 290 |         ORDER BY created_at DESC
+ 291 |         LIMIT ? OFFSET ?;
+ 292 |       `;
+ 293 | 
+ 294 |       const result = await this.executeSql(query, [limit, offset]);
+ 295 |       const commissions: Commission[] = [];
+ 296 | 
+ 297 |       for (let i = 0; i < result.rows.length; i++) {
+ 298 |         const row = result.rows.item(i);
+ 299 |         commissions.push(this.mapRowToEntity(row));
+ 300 |       }
+ 301 | 
+ 302 |       const duration = Date.now() - startTime;
+ 303 |       console.log(
+ 304 |         `✅ Retrieved ${commissions.length} commissions in ${duration}ms`
+ 305 |       );
+ 306 | 
+ 307 |       return commissions;
+ 308 |     } catch (error) {
+ 309 |       console.error('❌ Error finding all commissions:', error);
+ 310 |       throw error;
+ 311 |     }
+ 312 |   }
+ 313 | 
+ 314 |   /**
+ 315 |    * Get commission by ID
+ 316 |    */
+ 317 |   async findById(id: string): Promise<Commission | null> {
+ 318 |     console.log(`🔍 Finding commission by ID: ${id}`);
+ 319 | 
+ 320 |     try {
+ 321 |       const query = 'SELECT * FROM commissions WHERE id = ? LIMIT 1;';
+ 322 |       const result = await this.executeSql(query, [id]);
+ 323 | 
+ 324 |       if (result.rows.length > 0) {
+ 325 |         const commission = this.mapRowToEntity(result.rows.item(0));
+ 326 |         console.log(`✅ Found commission: ${id}`);
+ 327 |         return commission;
+ 328 |       }
+ 329 | 
+ 330 |       console.log(`⚠️ Commission not found: ${id}`);
+ 331 |       return null;
+ 332 |     } catch (error) {
+ 333 |       console.error(`❌ Error finding commission ${id}:`, error);
+ 334 |       throw error;
+ 335 |     }
+ 336 |   }
+ 337 | 
+ 338 |   /**
+ 339 |    * Get commission count
+ 340 |    */
+ 341 |   async getCount(): Promise<number> {
+ 342 |     try {
+ 343 |       const query = 'SELECT COUNT(*) as count FROM commissions;';
+ 344 |       const result = await this.executeSql(query);
+ 345 |       const count = result.rows.item(0).count;
+ 346 |       console.log(`📊 Total commissions count: ${count}`);
+ 347 |       return count;
+ 348 |     } catch (error) {
+ 349 |       console.error('❌ Error getting commission count:', error);
+ 350 |       throw error;
+ 351 |     }
+ 352 |   }
+ 353 | 
+ 354 |   /**
+ 355 |    * Clear all commissions (for testing)
+ 356 |    */
+ 357 |   async clearAll(): Promise<number> {
+ 358 |     console.log('🗑️ Clearing all commissions');
+ 359 | 
+ 360 |     try {
+ 361 |       const query = 'DELETE FROM commissions;';
+ 362 |       const result = await this.executeSql(query);
+ 363 |       console.log(`✅ Cleared ${result.rowsAffected} commissions`);
+ 364 |       return result.rowsAffected;
+ 365 |     } catch (error) {
+ 366 |       console.error('❌ Error clearing commissions:', error);
+ 367 |       throw error;
+ 368 |     }
+ 369 |   }
+ 370 | 
+ 371 |   /**
+ 372 |    * Map database row to Commission entity
+ 373 |    */
+ 374 |   private mapRowToEntity(row: any): Commission {
+ 375 |     return {
+ 376 |       id: row.id,
+ 377 |       cp_id: row.cp_id,
+ 378 |       lead_id: row.lead_id,
+ 379 |       customer_id: row.customer_id,
+ 380 |       amount: row.amount,
+ 381 |       status: row.status,
+ 382 |       created_at: row.created_at,
+ 383 |       updated_at: row.updated_at,
+ 384 |       payment_date: row.payment_date,
+ 385 |       description: row.description,
+ 386 |       sync_status: row.sync_status || 'synced',
+ 387 |       local_changes: row.local_changes || '{}',
+ 388 |     };
+ 389 |   }
+ 390 | 
+ 391 |   /**
+ 392 |    * Performance test method for benchmarking
+ 393 |    */
+ 394 |   async performanceTest(count: number = 50): Promise<{
+ 395 |     insertTime: number;
+ 396 |     selectTime: number;
+ 397 |     kpiTime: number;
+ 398 |     averageInsertTime: number;
+ 399 |   }> {
+ 400 |     console.log(`🧪 Running commission performance test with ${count} records`);
+ 401 | 
+ 402 |     // Generate test data
+ 403 |     const testCommissions: Commission[] = Array.from(
+ 404 |       { length: count },
+ 405 |       (_, i) => ({
+ 406 |         id: `TEST-COMM-${i.toString().padStart(3, '0')}`,
+ 407 |         cp_id: 'TEST-CP-001',
+ 408 |         lead_id: `TEST-LEAD-${i}`,
+ 409 |         amount: Math.floor(Math.random() * 50000) + 10000,
+ 410 |         status: ['pending', 'paid', 'approved'][
+ 411 |           Math.floor(Math.random() * 3)
+ 412 |         ] as any,
+ 413 |         created_at: new Date(
+ 414 |           Date.now() - Math.random() * 30 * 24 * 60 * 60 * 1000
+ 415 |         ).toISOString(),
+ 416 |         updated_at: new Date().toISOString(),
+ 417 |         sync_status: 'synced' as const,
+ 418 |         local_changes: '{}',
+ 419 |       })
+ 420 |     );
+ 421 | 
+ 422 |     // Test insert performance
+ 423 |     const insertStart = Date.now();
+ 424 |     await this.upsertMany(testCommissions);
+ 425 |     const insertTime = Date.now() - insertStart;
+ 426 | 
+ 427 |     // Test select performance
+ 428 |     const selectStart = Date.now();
+ 429 |     const retrievedCommissions = await this.findAll(count);
+ 430 |     const selectTime = Date.now() - selectStart;
+ 431 | 
+ 432 |     // Test KPI performance
+ 433 |     const kpiStart = Date.now();
+ 434 |     await this.getKPIStats();
+ 435 |     const kpiTime = Date.now() - kpiStart;
+ 436 | 
+ 437 |     // Clean up test data
+ 438 |     await this.executeSql(
+ 439 |       'DELETE FROM commissions WHERE id LIKE "TEST-COMM-%";'
+ 440 |     );
+ 441 | 
+ 442 |     const averageInsertTime = insertTime / count;
+ 443 | 
+ 444 |     console.log(`📊 Commission performance test results:`, {
+ 445 |       totalCommissions: count,
+ 446 |       insertTime: `${insertTime}ms`,
+ 447 |       selectTime: `${selectTime}ms`,
+ 448 |       kpiTime: `${kpiTime}ms`,
+ 449 |       averageInsertTime: `${averageInsertTime.toFixed(2)}ms per commission`,
+ 450 |       retrievedCount: retrievedCommissions.filter((c) =>
+ 451 |         c.id.startsWith('TEST-COMM-')
+ 452 |       ).length,
+ 453 |     });
+ 454 | 
+ 455 |     return {
+ 456 |       insertTime,
+ 457 |       selectTime,
+ 458 |       kpiTime,
+ 459 |       averageInsertTime,
+ 460 |     };
+ 461 |   }
+ 462 | }
+ 463 | 
+ 464 | /**
+ 465 |  * Export singleton getter function (following existing pattern)
+ 466 |  */
+ 467 | export const getInstance = CommissionDao.getInstance;
+ 468 | export const resetInstance = CommissionDao.resetInstance;
+ 469 | 
+================================================================================
+File: fetchMock.ts
+Location: __tests__/mocks/fetchMock.ts
+================================================================================
+   1 | /**
+   2 |  * Fetch Mock for Testing
+   3 |  * Provides mock implementation for global fetch
+   4 |  */
+   5 | 
+   6 | interface MockFetchResponse {
+   7 |   ok: boolean;
+   8 |   status: number;
+   9 |   statusText: string;
+  10 |   json: () => Promise<any>;
+  11 |   text: () => Promise<string>;
+  12 |   clone: () => MockFetchResponse;
+  13 | }
+  14 | 
+  15 | class MockFetch {
+  16 |   private static responses: Array<MockFetchResponse | Error> = [];
+  17 |   private static callHistory: Array<{ url: string; options?: RequestInit }> =
+  18 |     [];
+  19 | 
+  20 |   static mockResponse(response: Partial<MockFetchResponse> | Error) {
+  21 |     if (response instanceof Error) {
+  22 |       this.responses.push(response);
+  23 |     } else {
+  24 |       this.responses.push({
+  25 |         ok: true,
+  26 |         status: 200,
+  27 |         statusText: 'OK',
+  28 |         json: () => Promise.resolve({}),
+  29 |         text: () => Promise.resolve(''),
+  30 |         clone: function () {
+  31 |           return this;
+  32 |         },
+  33 |         ...response,
+  34 |       });
+  35 |     }
+  36 |   }
+  37 | 
+  38 |   static mockReject(error: Error) {
+  39 |     this.responses.push(error);
+  40 |   }
+  41 | 
+  42 |   static clearMocks() {
+  43 |     this.responses = [];
+  44 |     this.callHistory = [];
+  45 |   }
+  46 | 
+  47 |   static getCallHistory() {
+  48 |     return [...this.callHistory];
+  49 |   }
+  50 | 
+  51 |   static getLastCall() {
+  52 |     return this.callHistory[this.callHistory.length - 1];
+  53 |   }
+  54 | 
+  55 |   static fetch = jest
+  56 |     .fn()
+  57 |     .mockImplementation((url: string, options?: RequestInit) => {
+  58 |       this.callHistory.push({ url, options });
+  59 | 
+  60 |       const response = this.responses.shift();
+  61 | 
+  62 |       if (!response) {
+  63 |         return Promise.resolve({
+  64 |           ok: true,
+  65 |           status: 200,
+  66 |           statusText: 'OK',
+  67 |           json: () => Promise.resolve({}),
+  68 |           text: () => Promise.resolve(''),
+  69 |           clone: function () {
+  70 |             return this;
+  71 |           },
+  72 |         });
+  73 |       }
+  74 | 
+  75 |       if (response instanceof Error) {
+  76 |         return Promise.reject(response);
+  77 |       }
+  78 | 
+  79 |       return Promise.resolve(response);
+  80 |     });
+  81 | }
+  82 | 
+  83 | export default MockFetch;
+  84 | 

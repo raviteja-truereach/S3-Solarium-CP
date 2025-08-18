@@ -1,0 +1,68 @@
+// Release Build Configuration for iOS Optimization
+// Solarium CP App - Release Settings
+
+#include "../Pods/Target Support Files/Pods-cpapp/Pods-cpapp.release.xcconfig"
+
+// ================================
+// OPTIMIZATION SETTINGS
+// ================================
+
+// Code optimization
+GCC_OPTIMIZATION_LEVEL = s
+SWIFT_OPTIMIZATION_LEVEL = -Osize
+
+// ================================
+// DEBUG INFORMATION
+// ================================
+
+// Debug symbols for crash reporting
+DEBUG_INFORMATION_FORMAT = dwarf-with-dsym
+GCC_GENERATE_DEBUGGING_SYMBOLS = YES
+
+// ================================
+// STRIPPING SETTINGS
+// ================================
+
+// Dead code stripping
+DEAD_CODE_STRIPPING = YES
+STRIP_INSTALLED_PRODUCT = YES
+COPY_PHASE_STRIP = YES
+STRIP_STYLE = all
+STRIP_SWIFT_SYMBOLS = YES
+
+// ================================
+// BUILD SETTINGS
+// ================================
+
+// Architecture settings
+ONLY_ACTIVE_ARCH = NO
+VALIDATE_PRODUCT = YES
+
+// Disable debug features
+ENABLE_NS_ASSERTIONS = NO
+ENABLE_TESTABILITY = NO
+
+// ================================
+// DEPLOYMENT
+// ================================
+
+IPHONEOS_DEPLOYMENT_TARGET = 14.0
+
+// ================================
+// PERFORMANCE
+// ================================
+
+// Compiler settings for size optimization
+OTHER_CFLAGS = $(inherited) -Os -DNDEBUG
+OTHER_SWIFT_FLAGS = $(inherited) -Osize
+
+// Linker optimizations
+OTHER_LDFLAGS = $(inherited) -dead_strip
+
+// ================================
+// MODERN XCODE SETTINGS
+// ================================
+
+// Xcode 16.2 compatible settings
+CLANG_ANALYZER_LOCALIZABILITY_NONLOCALIZED = YES
+CLANG_WARN_QUOTED_INCLUDE_IN_FRAMEWORK_HEADER = NO

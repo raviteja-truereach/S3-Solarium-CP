@@ -1,0 +1,146 @@
+###############################################################################
+#   OS-level cruft
+###############################################################################
+# macOS / Windows
+.DS_Store
+Thumbs.db
+ 
+###############################################################################
+#   Node & JavaScript tooling
+###############################################################################
+node_modules/
+npm-debug.log*
+yarn-error.log*
+.yarn/cache/                 # Yarn Berry – leave if you migrate
+.yarn/releases/              # Yarn Berry
+.pnpm-store/                 # PNPM – harmless to ignore even on Yarn/NPM
+.eslintcache
+.jest/
+*.tsbuildinfo                # TypeScript incremental builds
+ 
+###############################################################################
+#  React Native / Metro
+###############################################################################
+.metro-cache/
+.bundle/
+*.bundle                     # e.g. index.android.bundle
+.metro-health-check*
+ 
+###############################################################################
+#  Android
+###############################################################################
+android/.gradle/             # per-project Gradle cache
+android/**/app/build/        # module-level build output
+*.apk
+*.aab
+*.hprof
+*.keystore
+*.jks
+!debug.keystore              # keep your shared debug keystore
+build/
+.idea
+.gradle
+local.properties
+*.iml
+*.hprof
+.cxx/
+android/build/
+ 
+###############################################################################
+#   iOS
+###############################################################################
+ios/Pods/
+ios/Podfile.lock
+ios/build/
+*.xcarchive                  # Xcode archives
+*.dSYM.zip
+*.dSYM
+*.ipa
+*.pbxuser
+!default.pbxuser
+*.mode1v3
+!default.mode1v3
+*.mode2v3
+!default.mode2v3
+*.perspectivev3
+!default.perspectivev3
+*.xcuserstate
+xcuserdata/
+DerivedData/
+*.hmap
+*.moved-aside
+*.xccheckout
+ios/.xcode.env.local
+ 
+###############################################################################
+#   Expo & EAS
+###############################################################################
+.expo/
+.expo-shared/
+dist/
+ 
+###############################################################################
+#   Fastlane
+###############################################################################
+fastlane/builds/
+fastlane/screenshots/
+fastlane/test_output/
+fastlane/Preview.html
+fastlane/report.xml
+**/fastlane/screenshots
+**/fastlane/test_output
+**/fastlane/Preview.html
+**/fastlane/report.xml
+ 
+###############################################################################
+#  Tests & Coverage
+###############################################################################
+coverage/
+jest-coverage/
+__tests__/coverage/
+*.lcov
+cypress/videos/
+cypress/screenshots/
+ 
+###############################################################################
+#   Code Quality / Sonar
+###############################################################################
+.sonarqube/
+sonar-project.properties.bak
+ 
+###############################################################################
+#   Husky
+###############################################################################
+.husky/_
+ 
+###############################################################################
+#  IDE configs
+###############################################################################
+.vscode/
+.idea/
+ 
+###############################################################################
+#   Secrets & certificates
+###############################################################################
+.env*
+!.env.example
+*.p12
+*.p8
+*.pem
+*.mobileprovision
+*.cer
+ios/certificates/development/
+ios/certificates/distribution/
+secrets/
+AuthKey*.p8
+ 
+###############################################################################
+#   Large binary assets (videos only — images/icons stay)
+###############################################################################
+*.mp4
+*.mov
+*.mkv
+*.avi
+*.wmv
+*.flv
+*.webm
